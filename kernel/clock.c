@@ -1,0 +1,9 @@
+
+#define PORT_CLOCK_0 0X40
+#define PORT_CLOCK_1 0X41
+#define PORT_CLOCK_2 0X42
+#define PORT_CLOCK_MODE	0X43
+
+#define CLOCK_HZ 1193180
+
+

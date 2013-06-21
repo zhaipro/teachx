@@ -1,0 +1,4 @@
+
+P_RETURN_ADDR	equ 9*4
+P_ERROR_CODE	equ 10*4
+P_CR3			equ 16*4
