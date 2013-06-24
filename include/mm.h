@@ -23,6 +23,6 @@
 #define MEM_NULL			0X600
 
 void init_user_space(u32);
-cr3_t create_vas();
+u32 create_vas();
 
 #endif

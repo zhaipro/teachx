@@ -1,6 +1,9 @@
 
 #ifndef __PROCESS_H_
 #define __PROCESS_H_
+/*
+这里输出所有的关于进程管理的用户接口 
+*/
 #include "type.h"
 
 union p_t{
@@ -24,9 +27,9 @@ struct msg_t{
 #define INVALID_HMSG	-1
 int ipc_recv(struct msg_t *pmsg);
 int ipc_send(uint pid,struct msg_t *pmsg,bool_t for_wait);
-int ipc_wait(uint hmsg);
+int ipc_wait(uint mid);
 int ipc_send_wait(uint pid,struct msg_t *pmsg);
-void ipc_for_wait(uint hmsg,int retval);
+void ipc_for_wait(uint mid,int retval);
 
 #define MAX_TLS	(_4K/sizeof(void*))
 #define MAX_TSD	MAX_TLS

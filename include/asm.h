@@ -9,7 +9,7 @@ void enable_pagine();
 void hlt();
 u8 in(port_t port);
 void lcr2(u32 r2);
-void lcr3(cr3_t cr3);
+void lcr3(u32 cr3);
 void lflags(u32 flags);
 void lgdt(struct GDTPTR*);
 void lidt(struct IDTPTR*);

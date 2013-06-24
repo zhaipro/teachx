@@ -1,39 +1,12 @@
 
+#include "process.h"
 #include "sched.h"
 #include "intc.h"
 #include "asm.h"
 #include "kernel.h"
 
-#define NUM_PROCESS 1
-
-TSS g_tss = {0};
-PROCESS g_process[NUM_PROCESS];
-
 /*
 static u32 task_stack[STACK_SIZE_TOTAL];
-
-
-static void delay()
-{
-	int i,j;
-	for(i=0;i<100;i++)
-	for(j=0;j<10000;j++)
-	{
-		
-	}
-}
-
-static void TestA()
-{
-	int i=0;
-	while(1)
-	{
-		disp_str("A");
-		disp_int(i++);
-		disp_str(".");
-		delay();
-	}
-}
 
 void entry()
 {
@@ -53,15 +26,44 @@ void entry()
 
 */
 
-
-void init_sched()
+struct thread_t* schedule()
 {
-	set_tss(&g_tss);
-	ltr(SELECTOR_TSS);
+	if(s_cur_thread){
+		if(s_cur_thread->life<0){
+			s_cur_thread->life += 20;
+			to_ready(s_cur_thread);
+			s_cur_thread = NULL;
+		}else if(s_cur_thread->status != STATUS_THREAD_READY){
+			s_cur_thread = NULL;
+		}
+	}
+	
+	if(s_cur_thread == NULL){
+		if(s_ready.next != &s_ready){
+			switch_to(s_ready.next);
+		}else
+			assert(!"no a process!");
+	}
 }
 
-void do_clock_int(PROCESS *cur)
+struct thread_t* do_iret()
 {
+	struct thread_t *cur_thread = get_cur_thread();
+	struct thread_t *new_thread;
+
+	if(cur_thread->sched.life <= 0){
+		cur_thread->sched.life += 20;
+		new_thread = schedule();
+	}else{
+		new_thread = cur_thread;
+	}
+	
+	return new_thread;
+}
+
+void do_clock_int()
+{
+	struct thread_t *cur_thread = get_cur_thread();
 	eoi_m();
-	switch_to(cur);
+	cur_thread->sched.life --;
 }
