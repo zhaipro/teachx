@@ -90,10 +90,9 @@ static u32 get_free_zero_page()
 		return page_addr;
 	}else{
 		struct msg_t msg;
-		int hmsg;
+
 		msg.type = NEED_ZERO_PAGE;
-		hmsg = send_msg(PID_MM,&msg,TRUE);
-		wait_msg(hmsg,FALSE);
+		_send_wait_msg(PID_MM,&msg);
 	}
 }
 
@@ -108,10 +107,9 @@ static u32 get_free_page()
 		s_free_zero_pages = s_free_zero_pages->next;
 	}else{
 		struct msg_t msg;
-		int hmsg;
+
 		msg.type = NEED_PAGE;
-		hmsg = send_msg(PID_MM,&msg,TRUE);
-		wait_msg(hmsg,FALSE);
+		_send_wait_msg(PID_MM,&msg);
 	}
 
 	return page_addr;
@@ -400,7 +398,7 @@ void mm_process()
 	int retval;
 	while(1)
 	{
-		hmsg = recv_msg(&msg);
+		hmsg = ipc_recv(&msg);
 		switch(msg.type)
 		{
 		case NEED_PAGE:
@@ -420,7 +418,7 @@ void mm_process()
 }
 
 // create virtual address space
-cr3_t create_vas()
+u32 create_vas()
 {
 	void *new_pdt;
 	memset(new_pdt,0,_2K);

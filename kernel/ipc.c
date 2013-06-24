@@ -56,7 +56,12 @@ int send_msg(uint pid_to,struct msg_t *pmsg,bool_t need_wait)
 	to_proc->ipc.msg_tail = new_msg;
 
 // 返回该消息id -- mid :) 
-	return need_wait? new_msg - msgn : INVALID_HMSG;
+	return new_msg - msgn;
+}
+
+void _send_msg(uint pid,struct msg_t *pmsg)
+{
+	send_msg(pid,pmsg,FALSE);
 }
 
 void wait_msg(int mid,bool_t need_retval)
@@ -73,6 +78,12 @@ void wait_msg(int mid,bool_t need_retval)
 		msgn[mid].tid_wait = get_cur_tid();
 		to_block(msgn[mid].tid_wait);
 	}
+}
+
+void _send_wait_msg(uint pid,struct msg_t *pmsg)
+{
+	int mid = send_msg(pid,pmsg,TRUE);
+	wait_msg(mid,FALSE);
 }
 
 void for_wait_msg(int mid,int retval)
@@ -138,28 +149,38 @@ void recv_msg(struct msg_t *pmsg)
 
 #define IPC_ATTR_WAIT	0X10	// 只可以与 IPC_WAIT 掩码 
 
-int do_ipc(uint func,uint pid_to_or_hmsg,struct msg_t *pmsg)
-{	
+int do_ipc()
+{
+	struct thread_t *thread = get_cur_thread();
+	uint func = thread->context.pushad.eax;
+	uint pid_to_or_hmsg = thread->context.pushad.ebx;
+	struct msg_t *pmsg = thread->context.pushad.ecx;
+
 	switch(func)
 	{
 	case IPC_RECV:
-		return recv_msg(pmsg);
+		recv_msg(pmsg);
 	break;
 	case IPC_SEND:
-		return send_msg(pid_to_or_hmsg,pmsg,FALSE);
+	{
+		int mid = INVALID_HMSG;
+		if(func & IPC_ATTR_WAIT)
+			mid = send_msg(pid_to_or_hmsg,pmsg,TRUE);
+		else{
+			send_msg(pid_to_or_hmsg,pmsg,FALSE);
+		}
+		set_retval(get_cur_tid(),mid);
+	}
 	break;
 	case IPC_WAIT:
-		return wait_msg(pid_to_or_hmsg,TRUE);
+		wait_msg(pid_to_or_hmsg,TRUE);
 	break;
 	case IPC_SEND_WAIT:
 		pid_to_or_hmsg = send_msg(pid_to_or_hmsg,pmsg,TRUE);
-		return wait_msg(pid_to_or_hmsg,TRUE);
+		wait_msg(pid_to_or_hmsg,TRUE);
 	break;
 	case IPC_FOR_WAIT:
 		for_wait_msg(pid_to_or_hmsg,pmsg->p0.iparam);
-	break;
-	case IPC_SEND | IPC_ATTR_WAIT:
-		return send_msg(pid_to_or_hmsg,pmsg,TRUE);
 	break;
 	default:
 		
@@ -169,14 +190,10 @@ int do_ipc(uint func,uint pid_to_or_hmsg,struct msg_t *pmsg)
 
 void init_ipc()
 {
-	int i;
-
-	s_msg_deal_header.next = s_msg_deal_header.prev = &s_msg_deal_header;
 	s_free_msgs = NULL;
-	for(i=0;i<COUNT_MSG;i++)
-	{
-		BEGIN_MSG_BUFFER[i].next = s_free_msgs;
-		s_free_msgs = &BEGIN_MSG_BUFFER[i];
-	}
+	
+	
+	// 定义在 ipc.asm 中 
+	int ipc_int();
 	set_sys_idt(0x80,ipc_int);
 }

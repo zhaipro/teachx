@@ -1,49 +1,38 @@
 
-#include "process.h"
 #include "sched.h"
-#include "intc.h"
-#include "asm.h"
-#include "kernel.h"
 
-/*
-static u32 task_stack[STACK_SIZE_TOTAL];
+// 将可调度线程组织成双指针域的循环链表 
+// 其中 idle_head 为表头，且指向空闲进程的线程 
+struct thread_t *idle_head;
 
-void entry()
+void sched_init(struct thread_t *idle_thread)
 {
-	s_proc.regs.cs		= (8 * 0) | SA_TIL | SA_RPL3;
-	s_proc.regs.ds		= (8 * 1) | SA_TIL | SA_RPL3;
-	s_proc.regs.ss		= (8 * 1) | SA_TIL | SA_RPL3;
-	s_proc.regs.eip	= (u32)TestA;
-	s_proc.regs.esp	= (u32) task_stack + STACK_SIZE_TOTAL;
-	s_proc.regs.eflags	= 0x1202;	// IF=1, IOPL=1, bit 2 is always 1.
-	
-	restart(&s_proc);
+	idle_head = idle_thread;
+	idle_head->sched.prev = idle_head;
+	idle_head->sched.next = idle_head;
+} 
+
+void sched_insert(struct thread_t *thread)
+{
+	thread->sched.prev = idle_head->sched.prev;
+	thread->sched.next = idle_head;
+	idle_head->sched.prev->sched.next = thread;
+	idle_head->sched.prev = thread;
 }
 
-	g_tss.ss0 = SELECTOR_KERNEL_DS;
-	g_tss.esp0 = (u32)((&s_proc.regs) + 1);
-	g_tss.iobase = sizeof(g_tss);
-
-*/
+void sched_erase(struct thread_t *thread)
+{
+	thread->sched.prev->sched.next = thread->sched.next;
+	thread->sched.next->sched.prev = thread->sched.prev;
+}
 
 struct thread_t* schedule()
 {
-	if(s_cur_thread){
-		if(s_cur_thread->life<0){
-			s_cur_thread->life += 20;
-			to_ready(s_cur_thread);
-			s_cur_thread = NULL;
-		}else if(s_cur_thread->status != STATUS_THREAD_READY){
-			s_cur_thread = NULL;
-		}
-	}
+	struct thread_t *new_thread;
 	
-	if(s_cur_thread == NULL){
-		if(s_ready.next != &s_ready){
-			switch_to(s_ready.next);
-		}else
-			assert(!"no a process!");
-	}
+	new_thread = idle_head->sched.next;
+	
+	return new_thread;
 }
 
 struct thread_t* do_iret()
@@ -52,7 +41,9 @@ struct thread_t* do_iret()
 	struct thread_t *new_thread;
 
 	if(cur_thread->sched.life <= 0){
-		cur_thread->sched.life += 20;
+		cur_thread->sched.life += MAX_THREAD_LIFE;
+		sched_erase(cur_thread);
+		sched_insert(cur_thread);
 		new_thread = schedule();
 	}else{
 		new_thread = cur_thread;

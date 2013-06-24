@@ -74,6 +74,8 @@ struct thread_t{
 	struct{
 		#define MAX_THREAD_LIFE		20
 		int life;
+		struct thread_t *prev;
+		struct thread_t *next; 
 	}sched;
 
 // ipc module data
@@ -103,13 +105,6 @@ void to_ready(int tid);
 void to_ready_ex(struct thread_t*);
 void set_retval(int tid,int retval);
 void set_retval_ex(struct thread_t*,int retval);
-
-int ipc_int(uint func,uint pid_to_or_hmsg,struct msg_t *pmsg);	// 中断函数 
-
-int send_msg(uint pid_to,struct msg_t *pmsg,bool_t need_wait);
-void for_wait_msg(int hmsg,int retval);
-int wait_msg(int hmsg,bool_t need_retval);
-int recv_msg(struct msg_t *pmsg);
 
 uint get_cur_pid();
 uint get_cur_tid();

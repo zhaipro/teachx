@@ -13,7 +13,7 @@
 
 
 // 定义在 _process.asm 中 
-int ipc(uint func,uint pid_to_or_hmsg,struct msg_t *pmsg);		// 使用中断接口，用户只能调用这个函数
+int ipc(uint func,uint pid_to_or_hmsg,struct msg_t *pmsg);
 
 int ipc_recv(struct msg_t *pmsg)
 {
