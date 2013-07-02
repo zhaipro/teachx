@@ -1,5 +1,5 @@
 
-#include "../inc/string.h"
+#include "string.h"
 
 #define NULL 0
 

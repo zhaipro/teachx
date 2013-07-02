@@ -8,21 +8,20 @@
 文件（物理内存）内核对象可以共享，但是映射对象则不可以，
 因为每个程序可能将相同的文件（物理内存）映射到不同的虚拟内存地址中。 
 
-一个区域的大小必须大于零 
-
 文件映射机制： 
 打开文件
 映射文件 创建映射内核对象 
 映射视图 直接映射到内存就可以了，即使其指向映射对象。 
 */
+#include "_mm.h"
 #include "type.h"
 
-#define MEM_MASH			0XE00
-#define MEM_COMMIT			0X200
-#define MEM_COMMIT_RESET	0X400
-#define MEM_NULL			0X600
-
-void init_user_space(u32);
 u32 create_vas();
+
+void do_mm_fork(int p_pid,int c_pid);
+
+void* kvirtual_alloc(void *addr,size_t size);
+bool_t kvirtual_reset(void *addr);
+bool_t kvirtual_free(void *addr);
 
 #endif

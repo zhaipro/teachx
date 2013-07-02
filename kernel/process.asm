@@ -9,6 +9,8 @@ int_count DD 0	;中断嵌套的次数
 [SECTION .text]
 [BITS 32]
 
+global save_restart
+global _restart
 extern _do_iret
 extern _switch_to
 

@@ -5,7 +5,7 @@ win代表温切斯特(Winchester)硬盘
 #include "intc.h"
 #include "setup.h"
 #include "asm.h"
-#include "console.h"
+#include "vga.h"
 #include "process.h"
 #include "_sys_call.h"
 
@@ -268,7 +268,7 @@ void hd_process()
 	
 	while(1)
 	{
-		hmsg = recv_msg(&msg);
+		hmsg = ipc_recv(&msg);
 		switch(msg.type)
 		{
 		case SC_HD_READ:

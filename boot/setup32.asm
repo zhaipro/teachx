@@ -6,7 +6,7 @@
 %include "..\include\system.inc"
 
 extern _setup32
-[SECTION .s32]
+[SECTION .text]
 [BITS	32]
 
 LABEL_PM_START:

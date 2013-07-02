@@ -2,8 +2,7 @@
 %include "..\include\system.inc"
 
 extern	_do_int_key
-extern	_save
-extern	_restart
+extern	save_restart
 global	_int_key
 
 [SECTION .text]
@@ -11,8 +10,6 @@ global	_int_key
 
 ; IRQ1
 _int_key:
-	sub	esp, 4
-	call	_save
-	add	esp, 4
-	call	_do_int_key
-	call	_restart
+	push	0
+	push	_do_int_key
+	jmp	save_restart

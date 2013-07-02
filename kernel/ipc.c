@@ -1,6 +1,7 @@
 
 #include "ipc.h"
 #include "process.h"
+#include "kernel.h"
 
 // 用于struct _msg_t结构中flag域。
 #define FLAG_MSG_USEING		1	// 该消息块正在被使用 
@@ -9,10 +10,7 @@
 #define FLAG_MSG_RETVAL		8	// 等待该消息的线程要求带回返回值 
 #define FLAG_MSG_WAITING	0X10// 有线程正在等待该消息的完成 
 
-struct _msg_t *msgn;
-
-#define SIZE_MSG_BUFFER		_4K
-#define COUNT_MSG			(SIZE_MSG_BUFFER/sizeof(struct _msg_t))
+static struct _msg_t *msgn;
 
 static struct _msg_t *s_free_msgs;
 
@@ -154,7 +152,7 @@ int do_ipc()
 	struct thread_t *thread = get_cur_thread();
 	uint func = thread->context.pushad.eax;
 	uint pid_to_or_hmsg = thread->context.pushad.ebx;
-	struct msg_t *pmsg = thread->context.pushad.ecx;
+	struct msg_t *pmsg = (struct msg_t*)thread->context.pushad.ecx;
 
 	switch(func)
 	{
@@ -190,8 +188,16 @@ int do_ipc()
 
 void init_ipc()
 {
-	s_free_msgs = NULL;
+	int i;
 	
+	msgn = (struct _msg_t*)kvirtual_alloc(NULL,_4K);
+	for(i = 0;i < _4K/sizeof(struct _msg_t) - 1;i++)
+	{
+		msgn[i].next = &msgn[i+1];
+	}
+	msgn[i].next = NULL;
+	
+	s_free_msgs = msgn;
 	
 	// 定义在 ipc.asm 中 
 	int ipc_int();

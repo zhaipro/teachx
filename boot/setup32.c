@@ -18,8 +18,8 @@
 #define _pt513 ((u32*)(_1M+_2K+_2K+_4K))
 #define _stack (_1M+_2K+_2K+_4K+_4K)
 #define _knl ((u32*)(_1M+_2K+_2K+_4K+_4K+_4K))
-#define _knl_in_setup ((u32*)(0x80700))
-#define SIZE_KERNEL	(3*_4K)
+#define _knl_in_setup ((u32*)(0x80900))
+#define SIZE_KERNEL	(4*_4K)
 #define _temp_pt0 ((u32*)0)
 
 /*
@@ -86,16 +86,16 @@ static void init_gdt()
 // VGA段
 	set_gdt(1,(void*)VGA,8,DA_DRW|DA_LIMIT_4K|DA_DPL3);
 // 系统段，系统段长度日后再说 
-	set_gdt(2,(void*)0,0x80520,DA_C|DA_32|DA_LIMIT_4K);	
-	set_gdt(3,(void*)0,0x80520,DA_DRW|DA_32|DA_LIMIT_4K);
+	set_gdt(2,(void*)0,0xfffff,DA_C|DA_32|DA_LIMIT_4K);	
+	set_gdt(3,(void*)0,0xfffff,DA_DRW|DA_32|DA_LIMIT_4K);
 // 用户段 
 	set_gdt(4,0,512*1024,DA_C|DA_32|DA_LIMIT_4K);
 	set_gdt(5,0,512*1024,DA_DRW|DA_32|DA_LIMIT_4K);
 // TSS段 
 	set_gdt(6,0,0,0);							// 有内核对其进行初始化 
 // 系统进程段 
-	set_gdt(7,0,0x80520,DA_C|DA_32|DA_LIMIT_4K|DA_DPL1);
-	set_gdt(8,0,0x80520,DA_DRW|DA_32|DA_LIMIT_4K|DA_DPL1);
+	set_gdt(7,0,0xfffff,DA_C|DA_32|DA_LIMIT_4K|DA_DPL1);
+	set_gdt(8,0,0xfffff,DA_DRW|DA_32|DA_LIMIT_4K|DA_DPL1);
 	for(i=9;i<256;i++)
 		set_gdt(i,0,0,0);
 }
@@ -140,8 +140,9 @@ static void init_paging()
 	_pt513[265] = ((u32)_knl) | PA_P | PA_RW;
 	_pt513[266] = ((u32)_knl+_4K) | PA_P | PA_RW;
 	_pt513[267] = ((u32)_knl+2*_4K) | PA_P | PA_RW;
+	_pt513[268] = ((u32)_knl+3*_4K) | PA_P | PA_RW;
 //启动分页机制 
-	lcr3((cr3_t)_pt512);
+	lcr3((u32)_pt512);
 	enable_pagine();
 }
 

@@ -78,7 +78,7 @@ extern int _pthread_setspecific(pthread_key_t key, const void *value);
 
 int fork()
 {
-	msg_t msg;
+	struct msg_t msg;
 	msg.type = SC_FORK;
 	msg.p0.uiparam = get_cur_tid();
 	return ipc_send_wait(PID_PM,&msg);

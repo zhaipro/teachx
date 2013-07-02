@@ -49,6 +49,8 @@ gs	将全程保存视频缓冲区段选择子
 #define STACK_TOP		(STACK_BOTTOM + _1M)
 #define kernel_entry	STACK_TOP				//0x509000
 #define KERBEL_END		0X81000000
+#define PTE_BEGIN		(KERNEL_SEG+4*_4M)
+#define PTE_END			(KERNEL_SEG + 512*_1M)
 #define VIEW_BUFFER_BEGIN	(0x80c00000)		//视图缓冲区位置 
 #define VIEW_BUFFER_END		(0xa0c00000)	
 

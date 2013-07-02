@@ -1,8 +1,7 @@
 
 #ifndef _STDLIB_H_
 #define _STDLIB_H_
-
-typedef unsigned int size_t;
+#include "type.h"
 
 void* malloc(size_t size);
 void free(void *p);

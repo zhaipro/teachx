@@ -1,6 +1,5 @@
 
-extern	_save
-extern	_restart
+extern	save_restart
 extern	_do_floppy
 extern	_do_hd
 global	_floppy_int
@@ -10,15 +9,11 @@ global	_hd_int
 [BITS 32]
 
 _floppy_int:
-	sub  esp, 4
-	call _save
-	add  esp, 4
-	call [_do_floppy]
-	call _restart
+	sub	esp, 4
+	push	dword[_do_floppy]
+	jmp	save_restart
 
-_hd_int:	
-	sub  esp, 4
-	call _save
-	add  esp, 4
-	call [_do_hd]
-	call _restart
+_hd_int:
+	sub	esp, 4
+	push	dword[_do_hd]
+	jmp	save_restart

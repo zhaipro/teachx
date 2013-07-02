@@ -5,7 +5,7 @@
 */
 #include "intc.h"
 #include "keyboard.h"
-#include "console.h"	//暂时引用 
+#include "vga.h"	//暂时引用 
 #include "kernel.h"
 
 #define OUT_BUFFER	0X60

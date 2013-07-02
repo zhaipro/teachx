@@ -17,7 +17,7 @@ struct handle_elem_t{
 
 void init_handle_table()
 {
-	reserve_region(PHT_BEGIN,PHT_SIZE,RT_SYSTEM|RT_WRITE);
+	virtual_alloc(PHT_BEGIN,PHT_SIZE,FLAG_PAGE_WRITE);
 }
 
 // 使用自由链表的话需要一次初始化，暂时就这样吧！
@@ -71,9 +71,9 @@ void all_close_handle()
 
 // 得到调用该函数的进程与handle对应的内核对象指针
 // close_proc 用于检验 
-void* get_knl_obj(handle_t handle,fp_close_handle_t close_proc)
+void* get_knl_obj(int pid,handle_t handle,fp_close_handle_t close_proc)
 {
-	const struct handle_elem_t *p = get_handle_elem(handle);
+	const struct handle_elem_t *p = get_handle_elem(pid,handle);
 	return (p!=NULL && p->close_proc==close_proc)? p->knl_obj:NULL;
 }
 

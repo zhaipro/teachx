@@ -1,7 +1,7 @@
 
 %include "..\include\system.inc"
 
-extern _save_restart
+extern save_restart
 
 extern	_do_divide_error
 global	_divide_error
@@ -51,75 +51,75 @@ global	_unknow_int
 _divide_error:
 	push	0
 	push	_do_divide_error
-	jmp	_save_restart
+	jmp	save_restart
 
 ; int1
 _debug:
 	push	1
 	push	_do_int3
-	jmp	_save_restart
+	jmp	save_restart
 
 ; int2
 _nmi:
 	push	2
 	push	_do_nmi
-	jmp	_save_restart
+	jmp	save_restart
 
 ; int3
 _int3:
 	push	3
 	push	_do_int3
-	jmp	_save_restart
+	jmp	save_restart
 
 ; int4
 _overflow:
 	push	4
 	push	_do_overflow
-	jmp	_save_restart
+	jmp	save_restart
 
 ; int5
 _bounds:
 	push	5
 	push	_do_bounds
-	jmp	_save_restart
+	jmp	save_restart
 
 ; int6
 _invalid_op:
 	push	6
 	push	_do_invalid_op
-	jmp	_save_restart
+	jmp	save_restart
 
 ; int7	协处理器不存在，在其他文件中
 
 ; int8	
 _double_fault:
 	push	_do_double_fault
-	jmp	_save_restart
+	jmp	save_restart
 
 ; int9
 _coprocessor_segment_overrun:
 	push	9
 	push	_do_coprocessor_segment_overrun
-	jmp	_save_restart
+	jmp	save_restart
 ; int10
 _invalid_TSS:
 	push	_do_invalid_TSS
-	jmp	_save_restart
+	jmp	save_restart
 
 ; int11
 _segment_not_present:
 	push	_do_segment_not_present
-	jmp	_save_restart
+	jmp	save_restart
 
 ; int12
 _stack_segment:
 	push	_do_stack_segment
-	jmp	_save_restart
+	jmp	save_restart
 
 ; int13
 _general_protection:
 	push	_do_general_protection
-	jmp	_save_restart
+	jmp	save_restart
 
 ; int14	页错误	在内存管理中
 
@@ -127,4 +127,4 @@ _general_protection:
 _unknow_int:
 	push	0
 	push	_do_unknow_int
-	jmp _save_restart
+	jmp save_restart

@@ -1,9 +1,12 @@
 
 #include "sched.h"
+#include "intc.h"
+#include "assert.h"
+#include "stdio.h"
 
 // 将可调度线程组织成双指针域的循环链表 
 // 其中 idle_head 为表头，且指向空闲进程的线程 
-struct thread_t *idle_head;
+static struct thread_t *idle_head;
 
 void sched_init(struct thread_t *idle_thread)
 {
@@ -40,6 +43,8 @@ struct thread_t* do_iret()
 	struct thread_t *cur_thread = get_cur_thread();
 	struct thread_t *new_thread;
 
+	assert(cur_thread);
+	
 	if(cur_thread->sched.life <= 0){
 		cur_thread->sched.life += MAX_THREAD_LIFE;
 		sched_erase(cur_thread);

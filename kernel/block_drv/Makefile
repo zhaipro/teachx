@@ -1,5 +1,5 @@
 
-NASM = @d:\\nasm\\nasm.exe
+NASM = d:\nasm\nasm.exe
 NASMFLAGS = -f coff
 
 fdhd.o : fdhd.asm

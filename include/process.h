@@ -3,6 +3,8 @@
 #define _PROCESS_H_
 
 #include "ipc.h"
+#include "mm.h"
+#include "vasm.h"
 #include "_process.h"
 
 // pushad will push
@@ -52,7 +54,7 @@ struct process_t{
 
 // mm module data
 	struct{
-		void *regions;
+		region_hdr_t region_hdr;
 	}mm;
 	
 	#define MAX_PSD	10
@@ -68,7 +70,6 @@ struct thread_t{
 	int block_count;			// 记录该线程被多少次要求堵塞 
 	struct process_t *process;	// 指向自身线程所属的进程
 	struct thread_t *sibling;	// 指向自己的兄弟线程，用于链接该进程中的所有线程。 
-	struct thread_t *free_next;	// 用于自由块链表 
 	
 // sched module data
 	struct{
@@ -97,8 +98,6 @@ struct thread_t{
 	struct thread_t *next;
 };
 
-struct thread_t* alloc_tcb();
-void free_tcb(struct thread_t*);
 void to_block(int tid);
 void to_block_ex(struct thread_t*);
 void to_ready(int tid);

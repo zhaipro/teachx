@@ -1,4 +1,8 @@
 
+global _ipc
+global __pthread_getspecific
+global __pthread_setspecific
+
 [SECTION .text]
 [BITS 32]
 

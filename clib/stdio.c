@@ -8,7 +8,6 @@ typedef int *va_list;
 int vsprintf(char *buf, const char *fmt, va_list args)
 {
 	char*	p;
-	char	tmp[256];
 
 	for (p=buf;*fmt;fmt++)
 	{
