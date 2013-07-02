@@ -24,12 +24,28 @@ struct region_t{
 };
 typedef struct region_t* region_hdr_t;
 
+// 内核会在调用该模块其它函数前调用该初始化函数，你可以随便做点什么。 
 void init_vasm();
+
+// 创建一个内存区域管理器，并指定被管理区域大小[end,end2) 
+// 当然，[begin,end)不可用 
 region_hdr_t create_vasr(void *begin,void *end,void *end2);
+
+// 复制一份管理器 
 region_hdr_t vasm_do_fork(region_hdr_t hdr);
+
+// 从指定区域链中分配一个区域 
 void* alloc_region(region_hdr_t hdr,void *addr,size_t size,uint flag);
+
+// 暂时没有实现 
 bool_t reset_region(region_hdr_t hdr,const void *addr,uint flag);
+
+// 释放一个区域 
+// 如果指定地址不属于任何区域则返回false 
 bool_t free_region(region_hdr_t hdr,void *addr);
+
+// 得到指定地址所在区域的标志
+// 如果addr不在任何区域中，则返回0 
 uint region_flag(region_hdr_t hdr,const void *addr);
 
 #endif

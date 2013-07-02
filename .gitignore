@@ -5,3 +5,9 @@
 *.lnk
 *~
 
+ReadSector.txt
+c.img
+klib.c
+tinix.img
+debug.bat
+bochsrc.bxrc

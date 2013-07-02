@@ -19,7 +19,7 @@ static void sys_idle_proc()
 	{
 		for(j=0;j<1000000;j++)
 			nop();
-		printf("%d ",i);
+		printf("(1%d)",i);
 		for(j=0;j<1000000;j++)
 			nop();
 	}
@@ -27,11 +27,26 @@ static void sys_idle_proc()
 		hlt();
 }
 
+static void test_proc()
+{
+	int i,j;
+	
+	for(i=0;;i++)
+	{
+		for(j=0;j<1000000;j++)
+			nop();
+		printf("(2:%d)",i);
+		for(j=0;j<1000000;j++)
+			nop();
+	}
+}
+
 static void init_proc()
 {
 //	create_sys_proc(mm_process);
 //	create_sys_proc(hd_process);
 	create_sys_proc(sys_idle_proc);
+//	create_sys_proc(test_proc);
 }
 
 void kernel_start()

@@ -2,11 +2,10 @@
 #include "vasm.h"
 #include "mm.h" 
 
-#define INIT_BLOCK_SIZE	20
-#define THRESHOLD		10
+#define INIT_BLOCK_SIZE	10
 
 static struct region_t init_block[INIT_BLOCK_SIZE];
-static uint s_free_count;
+static uint s_free_count = 0;
 static struct region_t *s_free_regions = NULL;
 
 void init_vasm()
@@ -28,7 +27,7 @@ static struct region_t* get_node()
 	static bool_t fixing = FALSE;
 	struct region_t *new_node;
 	
-	if(s_free_count < THRESHOLD && fixing == FALSE){
+	if(s_free_count < INIT_BLOCK_SIZE && fixing == FALSE){
 		int i;
 		struct region_t *region;
 		
