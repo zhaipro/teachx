@@ -115,7 +115,7 @@ uint pls_alloc();
 void pls_free(uint index);
 void* pls_get_value(uint index);
 void pls_set_value(uint index,void *p);
-void create_sys_proc(void (*proc_addr)());
+struct thread_t* create_sys_proc(void (*proc_addr)());
 
 #define SYS_STACK_TOP	_2M
 #define SYS_STACK_BASE	_1M

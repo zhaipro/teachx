@@ -28,11 +28,49 @@ static void sys_idle_proc()
 		hlt();
 }
 
+static void test_proc2()
+{
+	int i,j;
+	
+	sti();
+	
+	for(i=0;;i++)
+	{
+		for(j=0;j<500000;j++)
+			nop();
+		printf("(2%d)",i);
+		for(j=0;j<500000;j++)
+			nop();
+	}
+}
+
+static void test_proc3()
+{
+	int i,j;
+	
+	sti();
+	
+	for(i=0;;i++)
+	{
+		for(j=0;j<1000000;j++)
+			nop();
+		printf("(3%d)",i);
+		for(j=0;j<1000000;j++)
+			nop();
+	}
+}
+
 static void init_proc()
 {
+	struct thread_t *thread;
 //	create_sys_proc(mm_process);
 //	create_sys_proc(hd_process);
-	create_sys_proc(sys_idle_proc);
+	thread = create_sys_proc(sys_idle_proc);
+	sched_init(thread);
+	thread = create_sys_proc(test_proc2);
+	sched_insert(thread);
+	thread = create_sys_proc(test_proc3);
+	sched_insert(thread);
 }
 
 void kernel_start()

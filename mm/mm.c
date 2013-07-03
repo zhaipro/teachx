@@ -280,7 +280,7 @@ u32 create_vas()
 	void *new_pdt = kvirtual_alloc(NULL,_4K);
 	memset(new_pdt,0,_2K);
 	memcpy(new_pdt+_2K,(void*)(PDT+_2K),_2K);
-	((u32*)new_pdt)[512] = get_paddr(new_pdt);
+	((u32*)new_pdt)[512] = get_paddr(new_pdt) | PAGE_WRITE | PAGE_PRESENT;
 	return get_paddr(new_pdt);
 }
 

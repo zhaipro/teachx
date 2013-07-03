@@ -191,7 +191,7 @@ static bool_t created = FALSE;	// 记录是否已调用过本函数
 	return new_proc;
 }
 
-void create_sys_proc(void (*proc_addr)())
+struct thread_t* create_sys_proc(void (*proc_addr)())
 {
 	struct process_t *proc = create_proc();
 	
@@ -212,7 +212,7 @@ void create_sys_proc(void (*proc_addr)())
 	
 	proc->threads->block_count = 0;
 	s_cur_thread = proc->threads;
-	sched_init(proc->threads);
+	return proc->threads;
 }
 
 // 设置TSS相关的内容 
