@@ -1,10 +1,11 @@
 
+#include "asm.h"
 #include "init.h"
 #include "kernel.h"
-#include "asm.h"
-#include "stdio.h"
+#include "process.h"
 #include "setup.h"
-#include "vga.h"
+#include "stdio.h"
+
 
 // 功能：
 // 保证任何时候系统中都至少有一个非堵塞进程 
@@ -27,26 +28,11 @@ static void sys_idle_proc()
 		hlt();
 }
 
-static void test_proc()
-{
-	int i,j;
-	
-	for(i=0;;i++)
-	{
-		for(j=0;j<1000000;j++)
-			nop();
-		printf("(2:%d)",i);
-		for(j=0;j<1000000;j++)
-			nop();
-	}
-}
-
 static void init_proc()
 {
 //	create_sys_proc(mm_process);
 //	create_sys_proc(hd_process);
 	create_sys_proc(sys_idle_proc);
-//	create_sys_proc(test_proc);
 }
 
 void kernel_start()

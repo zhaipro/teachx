@@ -33,13 +33,15 @@ static struct region_t* get_node()
 		
 		fixing = TRUE;	
 		region = (struct region_t*)kvirtual_alloc(NULL,_4K);
-		fixing = FALSE;
 	
 		for(i=0;i < _4K/sizeof(struct region_t) - 1;i++)
 			region[i].next = &region[i+1];
 		
+		s_free_count += _4K/sizeof(struct region_t);
 		region[i].next = s_free_regions;
 		s_free_regions = region;
+		
+		fixing = FALSE;
 	}
 	
 	new_node = s_free_regions;
@@ -127,6 +129,9 @@ void* alloc_region(region_hdr_t hdr,void *addr,size_t size,uint flag)
 	void *end;
 	struct region_t *insert = NULL;
 	
+	// 函数get_node可能会间接调用alloc_region函数，因此必须在寻找插入点之前调用 
+	struct region_t *new_region = get_node();
+	
 	if(addr){
 		struct region_t *p = hdr;
 		begin = (void*)((u32)addr & 0xfffff000);
@@ -157,19 +162,17 @@ void* alloc_region(region_hdr_t hdr,void *addr,size_t size,uint flag)
 	}
 	
 	if(insert){
-		struct region_t *p = get_node();
-
-		p->flag = flag;
-		p->begin = begin;
-		p->end = end;
-		p->end2 = insert->end2;
-		p->prev = insert;
-		p->next = insert->next;
-		insert->next->prev = p;
-		insert->next = p;
+		new_region->flag = flag;
+		new_region->begin = begin;
+		new_region->end = end;
+		new_region->end2 = insert->end2;
+		new_region->prev = insert;
+		new_region->next = insert->next;
+		insert->next->prev = new_region;
+		insert->next = new_region;
 		insert->end2 = begin;
 		
-		return p->begin;
+		return new_region->begin;
 	}else{
 		return NULL;
 	}
