@@ -26,7 +26,7 @@ struct pushad_t{
 用户进程只是用cs、ds段寄存器，gs为全局段寄存器 
 */
 struct cpu_context_t{	//		↑ Low
-	u32	ds;
+	u32	ds_es;
 	u32 fs;
 	struct pushad_t pushad;
 	u32 return_addr;

@@ -31,8 +31,16 @@ static void sys_idle_proc()
 static void test_proc2()
 {
 	int i,j;
+	struct msg_t msg;
+	int mid;
+	int retval;
 	
 	sti();
+	
+	msg.type = 2013;
+	mid = ipc_send(2,&msg,TRUE);
+	retval = ipc_wait(mid);
+	printf("retval = %d",retval);
 	
 	for(i=0;;i++)
 	{
@@ -46,9 +54,17 @@ static void test_proc2()
 
 static void test_proc3()
 {
+	struct msg_t msg;
 	int i,j;
+	int mid;
 	
 	sti();
+	
+	mid = ipc_recv(&msg);
+	
+	printf("mid = %d msg.type = %d",mid,msg.type);
+	
+	for_wait_msg(mid,1990);
 	
 	for(i=0;;i++)
 	{

@@ -2,6 +2,7 @@
 #include "ipc.h"
 #include "process.h"
 #include "kernel.h"
+#include "assert.h"
 
 // 用于struct _msg_t结构中flag域。
 #define FLAG_MSG_USEING		1	// 该消息块正在被使用 
@@ -16,8 +17,8 @@ static struct _msg_t *s_free_msgs;
 
 // 仅仅将消息放入排队 
 int send_msg(uint pid_to,struct msg_t *pmsg,bool_t need_wait)
-{
-	struct process_t *to_proc = get_proc(pid_to);
+{	
+	struct process_t *to_proc = get_proc(pid_to);	
 	struct thread_t *recv_tail = to_proc->ipc.recv_tail;
 	
 	pmsg->pid_from = get_cur_pid();
@@ -36,12 +37,15 @@ int send_msg(uint pid_to,struct msg_t *pmsg,bool_t need_wait)
 	}
 
 // 创建并初始化消息块 
+	assert(s_free_msgs);
 	struct _msg_t *new_msg = s_free_msgs;
 	s_free_msgs = s_free_msgs->next;
 	
 	new_msg->flag = FLAG_MSG_USEING;
+	
 	if(need_wait)
 		new_msg->flag |= FLAG_MSG_WAIT;
+	
 	new_msg->msg = *pmsg;
 
 // 将消息加入指定进程的消息排队 
@@ -75,6 +79,7 @@ void wait_msg(int mid,bool_t need_retval)
 			msgn[mid].flag |= FLAG_MSG_RETVAL;
 		msgn[mid].tid_wait = get_cur_tid();
 		to_block(msgn[mid].tid_wait);
+		msgn[mid].flag |= FLAG_MSG_WAITING;
 	}
 }
 
@@ -145,14 +150,14 @@ void recv_msg(struct msg_t *pmsg)
 #define IPC_SEND_WAIT	0X04	// 发送消息，并等待该消息返回 
 #define IPC_FOR_WAIT	0X05	// 
 
-#define IPC_ATTR_WAIT	0X10	// 只可以与 IPC_WAIT 掩码 
+#define IPC_ATTR_WAIT	0X10	// 只可以与 IPC_SEND 掩码 
 
 int do_ipc()
-{
+{	
 	struct thread_t *thread = get_cur_thread();
-	uint func = thread->context.pushad.eax;
-	uint pid_to_or_hmsg = thread->context.pushad.ebx;
-	struct msg_t *pmsg = (struct msg_t*)thread->context.pushad.ecx;
+	uint func = thread->context.pushad.ebx;
+	uint pid_to_or_hmsg = thread->context.pushad.ecx;
+	struct msg_t *pmsg = (struct msg_t*)thread->context.pushad.edx;
 
 	switch(func)
 	{
@@ -160,13 +165,15 @@ int do_ipc()
 		recv_msg(pmsg);
 	break;
 	case IPC_SEND:
+		send_msg(pid_to_or_hmsg,pmsg,FALSE);
+		set_retval(get_cur_tid(),INVALID_HMSG);
+	break;
+	case IPC_SEND | IPC_ATTR_WAIT:
 	{
 		int mid = INVALID_HMSG;
-		if(func & IPC_ATTR_WAIT)
-			mid = send_msg(pid_to_or_hmsg,pmsg,TRUE);
-		else{
-			send_msg(pid_to_or_hmsg,pmsg,FALSE);
-		}
+		printf("send msg");
+		mid = send_msg(pid_to_or_hmsg,pmsg,TRUE);
+		printf("end msg");
 		set_retval(get_cur_tid(),mid);
 	}
 	break;
@@ -181,7 +188,7 @@ int do_ipc()
 		for_wait_msg(pid_to_or_hmsg,pmsg->p0.iparam);
 	break;
 	default:
-		
+		assert(!"not be here");
 	break;
 	}
 }
@@ -201,5 +208,5 @@ void init_ipc()
 	
 	// 定义在 ipc.asm 中 
 	int ipc_int();
-	set_sys_idt(0x80,ipc_int);
+	_set_gate(&idt[0x80],DA_DPL3|DA_386IGate,ipc_int,SELECTOR_KERNEL_CS);
 }

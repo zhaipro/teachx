@@ -4,6 +4,7 @@
 */
 #include "asm.h"
 #include "assert.h"
+#include "config.h"
 #include "kernel.h"
 #include "mm.h"
 #include "process.h"
@@ -21,8 +22,6 @@ static struct thread_t *s_free_threads= NULL;	//空闲的PCB
 static struct process_t *s_free_procs	= NULL;
 static struct thread_t *s_cur_thread	= NULL;	//当前线程 
 #define s_cur_process	(s_cur_thread->process)
-static struct thread_t s_dead;					//僵死态，该线程已经结束，但是还有指向它的句柄存在。 
-static struct thread_t s_hang;					//挂起态 
 static struct TSS tss = {0};	//会用过的 
 
 struct process_t* get_cur_proc()
@@ -41,7 +40,7 @@ struct process_t* get_proc(int pid)
 } 
 
 void to_block_ex(struct thread_t *thread)
-{
+{	
 	if(thread->block_count == 0)
 		sched_erase(thread);
 	thread->block_count ++;
@@ -53,7 +52,7 @@ void to_block(int tid)
 }
 
 void to_ready_ex(struct thread_t *thread)
-{
+{	
 	thread->block_count --;
 	if(thread->block_count == 0)
 		sched_insert(thread);
@@ -95,17 +94,6 @@ struct process_t* alloc_pcb()
 {
 	struct process_t *new_proc;
 	
-	if(s_free_procs == NULL){
-		int i;
-		new_proc = kvirtual_alloc(NULL,_4K);
-		s_free_procs = new_proc;
-		for(i=0;i<_4K/sizeof(struct process_t) - 1;i++)
-		{
-			new_proc[i].sibling = &new_proc[i+1];
-		}
-		new_proc[i].sibling = NULL;
-	}
-	
 	new_proc = s_free_procs;
 	s_free_procs = s_free_procs->sibling;
 	
@@ -121,17 +109,6 @@ void free_pcb(struct process_t *pcb)
 struct thread_t* alloc_tcb()
 {
 	struct thread_t *new_thread;
-	
-	if(s_free_threads == NULL){
-		int i;
-		new_thread = kvirtual_alloc(NULL,_4K);
-		s_free_threads = new_thread;
-		for(i=0;i<_4K/sizeof(struct thread_t) - 1;i++)
-		{
-			new_thread[i].sibling = &new_thread[i+1];
-		}
-		new_thread[i].sibling = NULL;
-	}
 	
 	new_thread = s_free_threads;
 	s_free_threads = s_free_threads->sibling;
@@ -197,7 +174,7 @@ struct thread_t* create_sys_proc(void (*proc_addr)())
 	
 	// 初始化主线程数据 
 	// 初始化寄存器数据（不初始化通用寄存器） 
-	proc->threads->context.ds = SELECTOR_SYS_DS;
+	proc->threads->context.ds_es = SELECTOR_SYS_DS;
 	proc->threads->context.fs = SELECTOR_DUMMY;
 	proc->threads->context.eip = (u32)proc_addr;
 	proc->threads->context.cs = SELECTOR_SYS_CS;
@@ -229,11 +206,26 @@ void init_tss()
 
 void init_process_ctrl()
 {
-	s_dead.prev = s_dead.next = &s_dead;
-	s_hang.prev = s_hang.next = &s_hang;
+	int i;
 	
 	init_tss();
 	init_ipc();
+	
+	pcbn = kvirtual_alloc(NULL,MAX_PROC_COUNT * sizeof(struct process_t));
+	s_free_procs = pcbn;
+	for(i=0;i<MAX_PROC_COUNT - 1;i++)
+	{
+		pcbn[i].sibling = &pcbn[i+1];
+	}
+	pcbn[i].sibling = NULL;
+	
+	tcbn = kvirtual_alloc(NULL,MAX_THREAD_COUNT * sizeof(struct thread_t));
+	s_free_threads = tcbn;
+	for(i=0;i<MAX_THREAD_COUNT - 1;i++)
+	{
+		tcbn[i].sibling = &tcbn[i+1];
+	}
+	tcbn[i].sibling = NULL;
 	
 	extern void clock_int();
 	set_8259a_idt(INT_CLOCK,clock_int);

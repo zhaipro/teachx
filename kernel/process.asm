@@ -28,6 +28,7 @@ save_restart:
 	jne	.1
 	mov	dx, SELECTOR_KERNEL_DS
 	mov	ds, dx
+	mov	es, dx
 	mov	esp, TOP_STACK
 .1:
 	inc	dword[int_count]
@@ -49,6 +50,8 @@ save_restart:
 _restart:
 	mov	esp, [esp + 4]
 	pop	ds
+	mov	ax,ds
+	mov	es,ax 
 	pop	fs
 	popad 
 	add	esp, 8	; Ìø¹ýreturn_addr,error_code

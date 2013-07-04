@@ -6,7 +6,7 @@ CFLAGS = -I../include -fno-builtin
 
 all : asm.o kernel_asm.o vga_asm.o trap_asm.o keyboard_asm.o process_asm.o \
 	_process_asm.o kernel.o _process.o errno.o vga.o trap.o keyboard.o \
-	intc.o sched.o process.o clock.o ipc_asm.o
+	intc.o sched.o process.o clock.o ipc_asm.o ipc.o
 
 asm.o : asm.asm
 	$(NASM) $(NASMFLAGS) -o asm.o asm.asm
