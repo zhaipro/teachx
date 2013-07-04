@@ -1,4 +1,5 @@
 
+#include "asm.h"
 #include "type.h"
 #include "vga.h"
 

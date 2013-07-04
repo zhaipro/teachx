@@ -3,6 +3,7 @@
 #include "init.h"
 #include "kernel.h"
 #include "process.h"
+#include "sched.h"
 #include "setup.h"
 #include "stdio.h"
 
@@ -12,18 +13,14 @@
 // 让CPU休息休息 
 static void sys_idle_proc()
 {
-	int i,j;
-	
 	sti();
 	
-	for(i=0;;i++)
+	while(1)
 	{
-		for(j=0;j<1000000;j++)
-			nop();
-		printf("(1%d)",i);
-		for(j=0;j<1000000;j++)
-			nop();
+		nop();
+		printf("(1)");
 	}
+	
 	while(1)
 		hlt();
 }
@@ -96,21 +93,18 @@ void kernel_start()
 	
 	init_trap();
 	init_8259A();
-	//	printf("first:%x,last:%x\n",g_sys_info->first_page_addr,g_sys_info->last_page_addr);
+
 	init_mm(g_sys_info->first_page_addr,g_sys_info->last_page_addr);
-	printf("end of mm\nstart keyboard\n");
 	init_keyboard();
-	printf("end of keyboard\nstart process\n");
 	init_process_ctrl();
-	printf("end of process\nstart proc\n");
 	
 	flags = sflags();
 	flags |= 0x1000;
 	lflags(flags);
 	
 	init_proc();
-	printf("end of proc\n");
 	
-	// 从此系统初始化完毕，时钟中断后即可进入系统进程。 
-	sti();
+	printf("\n");
+
+	// 从此系统初始化完毕。 
 }

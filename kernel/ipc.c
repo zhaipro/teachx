@@ -171,9 +171,7 @@ int do_ipc()
 	case IPC_SEND | IPC_ATTR_WAIT:
 	{
 		int mid = INVALID_HMSG;
-		printf("send msg");
 		mid = send_msg(pid_to_or_hmsg,pmsg,TRUE);
-		printf("end msg");
 		set_retval(get_cur_tid(),mid);
 	}
 	break;

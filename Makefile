@@ -1,6 +1,6 @@
 
 CC = gcc
-CFLAGS = -Iinclude -fno-builtin
+CFLAGS = -Iinclude -fno-builtin -Wimplicit-function-declaration
 
 objects = kernel\kernel_asm.o kernel\kernel.o \
 	mm\mm.o mm\mm_asm.o mm\vasm.o kernel\intc.o \

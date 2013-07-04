@@ -67,9 +67,8 @@ static bool_t inited = FALSE;
 
 extern void page_fault();	//在memory.asm中 
 
-#define get_pte(vaddr)	(ptt+((u32)(vaddr)>>12))		// 求下界 
-#define get_ptec(vaddr)	get_pte((u32)(vaddr)+_4K-1)		// 求上界 
-#define get_pfn(paddr)	(&s_pfn[(paddr>>12)])
+#define get_pte(vaddr)	(ptt+((u32)(vaddr)>>12))
+#define get_pfn(paddr)	(&s_pfn[(paddr)>>12])
 
 //如果页表不存在就会产生异常。 
 #define get_paddr(vaddr)	((*get_pte(vaddr)) & 0xfffff000)
@@ -77,8 +76,6 @@ extern void page_fault();	//在memory.asm中
 // return ((pte - ptt)<<12); 
 #define get_vaddr(pte)	((u32)(pte)<<12)
 
-
-#define page_zero(addr) memset((void*)addr,0,_4K)
 
 #define NEED_ZERO_PAGE	1
 #define NEED_PAGE		2
@@ -131,17 +128,17 @@ static void put_page(u32 paddr,u32 vaddr)
 	
 	if(inited){
 		printf("++");
-		s_pfn[paddr>>12].count ++;
+		get_pfn(paddr)->count ++;
 	}
 }
 
 static void decommit_page(pte_t *ppte)
 {
 	if(*ppte & PAGE_PRESENT){
-		s_pfn[*ppte>>12].count --;
-		if(s_pfn[*ppte>>12].count == 0){
-			s_pfn[*ppte>>12].next = s_free_pages;
-			s_free_pages = &s_pfn[*ppte>>12];
+		get_pfn(*ppte)->count --;
+		if(get_pfn(*ppte)->count == 0){
+			get_pfn(*ppte)->next = s_free_pages;
+			s_free_pages = get_pfn(*ppte);
 		}
 	}
 	*ppte &= 0x00000FFE;
@@ -187,9 +184,9 @@ static void send_error(uint error_code,void *p)
 void do_no_page(u32 error_code,u32 cr2)
 {
 	printf("(solutioning:%x",cr2);
-	if(cr2 == KERNEL_SEG){
+	if(cr2 < KERNEL_SEG){
 		uint flag = region_flag(get_cur_proc()->mm.region_hdr,(void*)cr2);
-	
+		
 		switch(flag & ATTR_PAGE_MASK)
 		{
 		case ATTR_PAGE_UNKNOW:
@@ -346,8 +343,6 @@ void init_mm(u32 first_page,u32 last_page)
 // 得到一段虚拟内存区域，用于存放pfn。
 	s_pfn = kvirtual_alloc(NULL,(last_page>>12)*sizeof(struct PFN_t));
 	
-	printf("s_pfn:%x\n",s_pfn);
-	
 	memset(s_pfn,0,(last_page>>12)*sizeof(struct PFN_t));
 
 	// 1M 以下的物理内存不使用 
@@ -374,6 +369,4 @@ void init_mm(u32 first_page,u32 last_page)
 		if(!(*ppte & PAGE_PRESENT))
 			*ppte |= PAGE_WRITE|ATTR_PAGE_GNL;
 	}
-	
-	printf("4\n");
 }

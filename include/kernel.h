@@ -2,11 +2,6 @@
 #ifndef _KERNEL_H_
 #define _KERNEL_H_
 /*
-系统的虚拟内存布局:
-|  user seg   |     system seg                     |
-|	  2G      |  4M   |32K|2K |2K | 1M  |  ?   |
-[user space...|PDT&PTs|VGA|IDT|GDT|stack|kernel|...|]
-
 setup中的初始化要完成的任务：
 1、IDT:
 IDT占用内存2K，共256项，初始化就全部在内存中了 

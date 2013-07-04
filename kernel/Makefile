@@ -2,7 +2,7 @@
 NASM = D:\nasm\nasm.exe
 NASMFLAGS = -f coff
 CC = gcc
-CFLAGS = -I../include -fno-builtin
+CFLAGS = -I../include -fno-builtin -Wimplicit-function-declaration
 
 all : asm.o kernel_asm.o vga_asm.o trap_asm.o keyboard_asm.o process_asm.o \
 	_process_asm.o kernel.o _process.o errno.o vga.o trap.o keyboard.o \

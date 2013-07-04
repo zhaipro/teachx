@@ -3,10 +3,11 @@
 很好奇，无论PS/2还是USB键盘都可以使用0x60 0x64 端口
 按键->8048->8042->8259A->系统->(0X60/0X64) 
 */
+#include "asm.h"
 #include "intc.h"
+#include "kernel.h"
 #include "keyboard.h"
 #include "vga.h"	//暂时引用 
-#include "kernel.h"
 
 #define OUT_BUFFER	0X60
 #define IN_BUFFER	0X60

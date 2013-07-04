@@ -13,6 +13,7 @@
 #include "stdio.h"
 #include "type.h" 
 #include "intc.h"
+#include "ipc.h"
 #include "_sys_call.h"
 
 
@@ -159,7 +160,6 @@ static bool_t created = FALSE;	// 记录是否已调用过本函数
 	new_proc->sibling = NULL;	// 由克隆函数填写，再此只是初始化 
 	
 	new_thread->status = STATUS_THREAD_HANG;
-	new_thread->sched.life = MAX_THREAD_LIFE;
 	new_thread->block_count = 1;
 	new_thread->process = new_proc;
 	new_thread->sibling = NULL;
@@ -202,6 +202,12 @@ void init_tss()
 	tss.esp0 = STACK_TOP;
 	tss.iobase = sizeof(g_tss);
 	ltr(SELECTOR_TSS);
+}
+
+void do_clock_int()
+{
+	do_sched_clock_int();
+	eoi_m();
 }
 
 void init_process_ctrl()

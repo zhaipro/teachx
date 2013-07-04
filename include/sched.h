@@ -25,6 +25,6 @@ void sched_erase(struct thread_t*);
 struct thread_t* do_iret();
 
 // 时钟中断会调用该函数 
-void do_clock_int();
+void do_sched_clock_int();
 
 #endif
