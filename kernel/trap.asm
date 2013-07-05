@@ -1,5 +1,5 @@
 
-%include "..\include\system.inc"
+%include "system.inc"
 
 extern save_restart
 

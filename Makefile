@@ -1,4 +1,6 @@
 
+NASM = D:\nasm\nasm.exe
+NASMFLAGS = -I include/ -f coff
 CC = gcc
 CFLAGS = -Iinclude -fno-builtin -Wimplicit-function-declaration
 
@@ -12,6 +14,8 @@ objects = kernel\kernel_asm.o kernel\kernel.o \
 
 all : boot\setup32.bin setup.bin tinix.img
 
+include Makefile.d
+
 kernel.bin : $(objects)
 	@coff -Ttext 0x80509000 -o kernel.bin $(objects)
 
@@ -19,3 +23,31 @@ tinix.img : boot\boot.bin
 	@combine -c tinix.img -af boot\boot.bin
 setup.bin : boot\setup16.bin boot\setup32.bin kernel.bin
 	@combine -n setup.bin -af boot\setup16.bin -s 512 -af boot\setup32.bin -s 2048 -af kernel.bin
+
+mm\mm_asm.o : mm\mm.asm
+	$(NASM) $(NASMFLAGS) -o mm\mm_asm.o mm\mm.asm
+
+kernel\asm.o : kernel\asm.asm
+	$(NASM) $(NASMFLAGS) -o kernel\asm.o kernel\asm.asm
+
+kernel\kernel_asm.o : kernel\kernel.asm
+	$(NASM) $(NASMFLAGS) -o kernel\kernel_asm.o kernel\kernel.asm
+
+kernel\vga_asm.o : kernel\vga.asm
+	$(NASM) $(NASMFLAGS) -o kernel\vga_asm.o kernel\vga.asm
+
+kernel\trap_asm.o : kernel\trap.asm
+	$(NASM) $(NASMFLAGS) -o kernel\trap_asm.o kernel\trap.asm
+
+kernel\keyboard_asm.o : kernel\keyboard.asm
+	$(NASM) $(NASMFLAGS) -o kernel\keyboard_asm.o kernel\keyboard.asm
+
+kernel\process_asm.o : kernel\process.asm
+	$(NASM) $(NASMFLAGS) -o kernel\process_asm.o kernel\process.asm
+
+kernel\_process_asm.o : kernel\_process.asm
+	$(NASM) $(NASMFLAGS) -o kernel\_process_asm.o kernel\_process.asm
+
+kernel\ipc_asm.o : kernel\ipc.asm
+	$(NASM) $(NASMFLAGS) -o kernel\ipc_asm.o kernel\ipc.asm
+

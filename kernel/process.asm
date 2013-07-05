@@ -1,6 +1,6 @@
 
-%include "..\include\system.inc"
-%include "..\include\process.inc"
+%include "system.inc"
+%include "process.inc"
 
 [SECTION .data]
 [BITS 32]

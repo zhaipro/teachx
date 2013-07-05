@@ -23,7 +23,7 @@ static struct thread_t *s_free_threads= NULL;	//空闲的PCB
 static struct process_t *s_free_procs	= NULL;
 static struct thread_t *s_cur_thread	= NULL;	//当前线程 
 #define s_cur_process	(s_cur_thread->process)
-static struct TSS tss = {0};	//会用过的 
+static struct TSS tss = {0};
 
 struct process_t* get_cur_proc()
 {
@@ -91,7 +91,7 @@ void set_retval_ex(struct thread_t *thread,int retval)
 	thread->context.pushad.eax = retval;
 }
 
-struct process_t* alloc_pcb()
+static struct process_t* alloc_pcb()
 {
 	struct process_t *new_proc;
 	
@@ -101,13 +101,13 @@ struct process_t* alloc_pcb()
 	return new_proc;
 }
 
-void free_pcb(struct process_t *pcb)
+static void free_pcb(struct process_t *pcb)
 {
 	pcb->sibling = s_free_procs;
 	s_free_procs = pcb;
 }
 
-struct thread_t* alloc_tcb()
+static struct thread_t* alloc_tcb()
 {
 	struct thread_t *new_thread;
 	
@@ -117,7 +117,7 @@ struct thread_t* alloc_tcb()
 	return new_thread;
 }
 
-void free_tcb(struct thread_t *tcb)
+static void free_tcb(struct thread_t *tcb)
 {
 	tcb->sibling = s_free_threads;
 	s_free_threads = tcb;
@@ -193,7 +193,7 @@ struct thread_t* create_sys_proc(void (*proc_addr)())
 }
 
 // 设置TSS相关的内容 
-void init_tss()
+static void init_tss()
 {
 	set_gdt(INDEX_TSS_IN_GDT,&tss,sizeof(struct TSS),DA_386TSS|DA_DPL0);
 	

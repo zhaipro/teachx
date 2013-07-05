@@ -1,6 +1,4 @@
 
-%include "..\include\system.inc"
-
 extern	_do_int_key
 extern	save_restart
 global	_int_key
