@@ -9,8 +9,9 @@
 
 #define PID_MM	01	// Memory Manage
 #define PID_IO	02	// Input Output
-#define PID_PM	03	// Process Manage
-#define PID_HD	04	// Hard Disk
+#define PID_HD	03	// Hard Disk
+#define PID_PM	04	// Process Manage
+
 
 // 进程管理进程的消息类型 
 #define SC_PTHREAD_KEY_CREATE	01

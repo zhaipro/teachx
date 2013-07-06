@@ -36,8 +36,11 @@ void sched_insert(struct thread_t *thread)
 void sched_erase(struct thread_t *thread)
 {
 	// 调度函数需要 next_thread ，因此必须在删除该节点之前调用。 
-	if(next_thread == thread)
+	if(next_thread == thread){
 		schedule();
+		if(next_thread == thread)
+			next_thread = idle_head;
+	}
 	
 	thread->sched.prev->sched.next = thread->sched.next;
 	thread->sched.next->sched.prev = thread->sched.prev;

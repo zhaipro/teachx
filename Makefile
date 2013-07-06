@@ -8,9 +8,11 @@ objects = kernel\kernel_asm.o kernel\kernel.o \
 	mm\mm.o mm\mm_asm.o mm\vasm.o kernel\intc.o \
 	kernel\keyboard.o kernel\keyboard_asm.o kernel\trap.o kernel\trap_asm.o \
 	kernel\vga.o kernel\vga_asm.o kernel\process.o kernel\process_asm.o \
-	kernel\block_drv\hd.o kernel\block_drv\fdhd.o kernel\asm.o clib\assert.o \
+	kernel\asm.o clib\assert.o \
 	clib\stdio.o clib\string.o clib\stdlib.o kernel\ipc.o kernel\_process.o \
-	kernel\_process_asm.o kernel\sched.o kernel\ipc_asm.o
+	kernel\_process_asm.o kernel\sched.o kernel\ipc_asm.o \
+	kernel\blk_drv\blk_sched.o kernel\blk_drv\_hd.o kernel\blk_drv\hd.o \
+	kernel\blk_drv\fdhd_asm.o
 
 all : boot\setup32.bin setup.bin tinix.img
 
@@ -51,3 +53,5 @@ kernel\_process_asm.o : kernel\_process.asm
 kernel\ipc_asm.o : kernel\ipc.asm
 	$(NASM) $(NASMFLAGS) -o kernel\ipc_asm.o kernel\ipc.asm
 
+kernel\blk_drv\fdhd_asm.o : kernel\blk_drv\fdhd.asm
+	$(NASM) $(NASMFLAGS) -o kernel\blk_drv\fdhd_asm.o kernel\blk_drv\fdhd.asm

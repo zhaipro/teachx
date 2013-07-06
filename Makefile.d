@@ -51,3 +51,13 @@ mm.o: mm/mm.c include/type.h include/kernel.h include/i386.h \
 swap.o: mm/swap.c
 vasm.o: mm/vasm.c include/vasm.h include/type.h include/mm.h \
  include/_mm.h
+_hd.o: kernel\blk_drv\_hd.c include/_hd.h include/type.h \
+ include/_process.h include/_sys_call.h
+blk_sched.o: kernel\blk_drv\blk_sched.c include/type.h include/_process.h \
+ include/type.h include/_sys_call.h
+floppy.o: kernel\blk_drv\floppy.c include/asm.h include/i386.h \
+ include/type.h include/kernel.h include/intc.h include/kernel.h
+hd.o: kernel\blk_drv\hd.c include/intc.h include/kernel.h include/i386.h \
+ include/type.h include/setup.h include/asm.h include/vga.h \
+ include/process.h include/ipc.h include/_process.h include/mm.h \
+ include/_mm.h include/vasm.h include/_sys_call.h

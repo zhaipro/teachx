@@ -6,6 +6,7 @@
 #include "sched.h"
 #include "setup.h"
 #include "stdio.h"
+#include "_hd.h"
 
 
 // ¹¦ÄÜ£º
@@ -28,16 +29,16 @@ static void sys_idle_proc()
 static void test_proc2()
 {
 	int i,j;
+	void *buf;
 	struct msg_t msg;
 	int mid;
 	int retval;
 	
 	sti();
 	
-	msg.type = 2013;
-	mid = ipc_send(2,&msg,TRUE);
-	retval = ipc_wait(mid);
-	printf("retval = %d",retval);
+	buf = kvirtual_alloc(NULL,_4K);
+	hd_read_msg(buf,1,1);
+	printf(buf);
 	
 	for(i=0;;i++)
 	{
@@ -51,17 +52,9 @@ static void test_proc2()
 
 static void test_proc3()
 {
-	struct msg_t msg;
 	int i,j;
-	int mid;
 	
 	sti();
-	
-	mid = ipc_recv(&msg);
-	
-	printf("mid = %d msg.type = %d",mid,msg.type);
-	
-	for_wait_msg(mid,1990);
 	
 	for(i=0;;i++)
 	{
@@ -77,12 +70,13 @@ static void init_proc()
 {
 	struct thread_t *thread;
 //	create_sys_proc(mm_process);
-//	create_sys_proc(hd_process);
 	thread = create_sys_proc(sys_idle_proc);
 	sched_init(thread);
 	thread = create_sys_proc(test_proc2);
 	sched_insert(thread);
 	thread = create_sys_proc(test_proc3);
+	sched_insert(thread);
+	thread = create_sys_proc(hd_process);
 	sched_insert(thread);
 }
 
@@ -93,7 +87,7 @@ void kernel_start()
 	
 	init_trap();
 	init_8259A();
-
+	init_hd();
 	init_mm(g_sys_info->first_page_addr,g_sys_info->last_page_addr);
 	init_keyboard();
 	init_process_ctrl();
