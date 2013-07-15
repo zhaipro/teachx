@@ -326,7 +326,9 @@ void init_mm(u32 first_page,u32 last_page)
 {
 	int i;
 	pte_t *ppte;
-
+	
+	inited = FALSE;
+	
 // 尽快使页故障例程生效
 	s_first_page = first_page;
 	s_last_page  = last_page;

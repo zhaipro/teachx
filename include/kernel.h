@@ -30,26 +30,7 @@ GDT占用内存2K，共256项，初始化就全部在内存中了
 gs	将全程保存视频缓冲区段选择子 
 */
 #include "i386.h"
-
-/* 静态内存空间布局 */ 
-#define HANDLE_TABLE	0X7FFFE000		//句柄表的位置 
-#define KERNEL_SEG		(1u<<31)		/*2G*/
-#define PTT 			KERNEL_SEG
-#define PDT				(PTT + (PTT>>10))
-#define VGA				(PTT + _4M)
-#define IDT				(VGA + 8*_4K)
-#define GDT				(IDT + _2K)
-
-#define STACK_BOTTOM	(GDT + _2K)
-#define STACK_TOP		(STACK_BOTTOM + _1M)
-#define kernel_entry	STACK_TOP				//0x509000
-#define KERBEL_END		0X81000000
-#define PTE_BEGIN		(KERNEL_SEG+4*_4M)
-#define PTE_END			(KERNEL_SEG + 512*_1M)
-#define VIEW_BUFFER_BEGIN	(0x80c00000)		//视图缓冲区位置 
-#define VIEW_BUFFER_END		(0xa0c00000)	
-
-extern struct TSS g_tss;
+#include "config.h" 
 
 /* 选择子 */
 #define	SELECTOR_DUMMY		0

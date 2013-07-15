@@ -1,4 +1,5 @@
 
+#include "config.h"
 #include "blk.h"
 #include "process.h"
 #include "_sys_call.h"
@@ -58,16 +59,26 @@ static void hd_do_next_req()
 
 // 将一个新请求项加入请求链表
 // 暂时不使用电梯算法，而是FIFO 
-static void req_insert(struct request_t *preq) 
+static void req_insert(uint sector,uint nsect,uint cmd,void *buf,uint mid)
 {
+	struct request_t *request = s_free_reqs;
+
+	s_free_reqs = s_free_reqs->next;
+	
+	request->sector = sector;
+	request->nsect = nsect;
+	request->cmd = cmd;
+	request->buf = buf;
+	request->mid = mid;
+	
 	if(s_cur_req){
-		preq->prev = s_cur_req->prev;
-		preq->next = s_cur_req;
+		request->prev = s_cur_req->prev;
+		request->next = s_cur_req;
 		
-		s_cur_req->prev->next = preq;
-		s_cur_req->prev = preq;
+		s_cur_req->prev->next = request;
+		s_cur_req->prev = request;
 	}else{
-		s_cur_req = preq;
+		s_cur_req = request;
 		s_cur_req->prev = s_cur_req->next = s_cur_req;
 		hd_do_request();
 	}
@@ -115,17 +126,7 @@ void hd_process()
 			if(s_free_reqs == NULL){
 				for_wait_msg(mid,FALSE);
 			}else{
-				struct request_t *request = s_free_reqs;
-				
-				s_free_reqs = s_free_reqs->next;
-				
-				request->sector = msg.p1.uiparam;
-				request->nsect = msg.p2.uiparam;
-				request->cmd = msg.type;
-				request->buf = msg.p0.pparam;
-				request->mid = mid;
-				
-				req_insert(request);
+				req_insert(msg.p1.uiparam,msg.p2.uiparam,msg.type,msg.p0.pparam,mid);
 			}
 		}
 		break;

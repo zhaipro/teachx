@@ -12,6 +12,7 @@ typedef unsigned short	u16;
 typedef unsigned int	u32;
 typedef int				s32;
 typedef unsigned int	uint;
+typedef unsigned char	byte;
 AssertSizeof(u8,1);
 AssertSizeof(u16,2);
 AssertSizeof(u32,4);
@@ -27,12 +28,5 @@ typedef int handle_t;
 #define TRUE  1
 
 #define NULL 0
-
-#define _1K (1u<<10)
-#define _2K (1u<<11)
-#define _4K (1u<<12)
-#define _1M (1u<<20)
-#define _2M (1u<<21)
-#define _4M (1u<<22)
 
 #endif
