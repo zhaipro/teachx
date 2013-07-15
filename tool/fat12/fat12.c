@@ -43,7 +43,7 @@ struct date_t{
 byte fat[9*512];
 FILE *fp;
 
-void get_date(struct dir_item_t *dir_item,struct date_t *date)
+static void get_date(struct dir_item_t *dir_item,struct date_t *date)
 {
 	date->hour = dir_item->time>>11;
 	date->minute = (dir_item->time>>5)&0x3f;
@@ -54,7 +54,7 @@ void get_date(struct dir_item_t *dir_item,struct date_t *date)
 	date->day = dir_item->date&0x1f;
 }
 
-void set_date(struct dir_item_t *dir_item,struct date_t *date)
+static void set_date(struct dir_item_t *dir_item,struct date_t *date)
 {
 	dir_item->time = (date->hour<<11) | (date->minute<<5) | (date->second>>1);
 	dir_item->date = ((date->year-1980)<<9) | (date->month<<5) | date->day;
@@ -186,13 +186,12 @@ void write_file(struct dir_item_t *dir_item,void *buf,int offset,int size)
 	if(next_cluster != 0xfff){
 		if(cur_cluster){
 			set_next(cur_cluster,0xfff);
-			while(1)
+			cur_cluster = next_cluster;
+			while(cur_cluster != 0xfff)
 			{
-				cur_cluster = get_next(next_cluster);
-				set_next(next_cluster,0);
-				if(cur_cluster == 0xfff)
-					break;
-				next_cluster = cur_cluster;
+				next_cluster = get_next(cur_cluster);
+				set_next(cur_cluster,0);
+				cur_cluster = next_cluster;
 			}
 		}else{
 			dir_item->cluster = 0xfff;
