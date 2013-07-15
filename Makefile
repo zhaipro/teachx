@@ -20,9 +20,9 @@ include Makefile.d
 
 kernel.bin : $(objects)
 	@coff -Ttext 0x80509000 -o kernel.bin $(objects)
-
-tinix.img : boot\boot.bin
+tinix.img : boot\boot.bin setup.bin
 	@combine -c tinix.img -af boot\boot.bin
+	tool\fat12\fat12.exe
 setup.bin : boot\setup16.bin boot\setup32.bin kernel.bin
 	@combine -n setup.bin -af boot\setup16.bin -s 512 -af boot\setup32.bin -s 2048 -af kernel.bin
 
