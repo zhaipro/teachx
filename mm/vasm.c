@@ -1,4 +1,5 @@
 
+#include "config.h"
 #include "vasm.h"
 #include "mm.h" 
 
@@ -123,7 +124,7 @@ bool_t free_region(region_hdr_t hdr,void *addr)
 	s_free_count ++;
 }
 
-void* alloc_region(region_hdr_t hdr,void *addr,size_t size,uint flag)
+void* alloc_region(region_hdr_t hdr,void *addr,size_t size,page_fault_t page_fault)
 {
 	void *begin;
 	void *end;
@@ -162,12 +163,13 @@ void* alloc_region(region_hdr_t hdr,void *addr,size_t size,uint flag)
 	}
 	
 	if(insert){
-		new_region->flag = flag;
+		new_region->flag = 0;
 		new_region->begin = begin;
 		new_region->end = end;
 		new_region->end2 = insert->end2;
 		new_region->prev = insert;
 		new_region->next = insert->next;
+		new_region->page_fault = page_fault;
 		insert->next->prev = new_region;
 		insert->next = new_region;
 		insert->end2 = begin;
