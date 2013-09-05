@@ -4,7 +4,7 @@
 
 #define AssertSizeof(type,bytes) typedef char test##type[sizeof(type)==bytes?1:-1]
 
-// 编译期断言 
+// 编译期断言 编译环境是否为32位 
 typedef char test_ptr[sizeof(void*)==4?1:-1]; 
 
 typedef unsigned char	u8;

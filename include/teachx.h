@@ -1,7 +1,9 @@
 
-#ifndef __MM_H_
-#define __MM_H_
+#ifndef _TEACHX_H_
+#define _TEACHX_H_
+
 #include "type.h"
+#include "time.h"
 
 // 没有定义 FLAG_PAGE_READ ，这是因为这会让用户以为，如果他们不设置该标志，那该区段就不可读。
 // 然而这是错误的认为。 
@@ -17,5 +19,13 @@ void* virtual_alloc(void *addr,size_t size,uint flag);
 bool_t virtual_reset(void *addr,uint flag);
 bool_t virtual_free(void *addr);
 bool_t mapview_file(void *addr,handle_t handle,int offset);
+
+
+// 返回消息句柄 
+int _hd_read_msg(void *buf,u32 sector,u8 nsect);
+int _hd_write_msg(const void *buf,u32 sector,u8 nsect);
+// 返回返回值 
+bool_t hd_read_msg(void *buf,u32 sector,u8 nsect);
+bool_t hd_write_msg(const void *buf,u32 sector,u8 nsect);
 
 #endif

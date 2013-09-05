@@ -1,4 +1,5 @@
 
+#include "_sys_call.h"
 #include "ipc.h"
 #include "process.h"
 #include "kernel.h"
@@ -12,12 +13,30 @@
 #define FLAG_MSG_WAITING	0X10// 有线程正在等待该消息的完成 
 
 static struct _msg_t *msgn;
-
 static struct _msg_t *s_free_msgs;
+
+static struct _msg_t* alloc_msg_block()
+{
+	struct _msg_t *new_block = s_free_msgs;
+	assert(new_block);
+	new_block->flag = FLAG_MSG_USEING;
+	s_free_msgs = s_free_msgs->next;
+//  调试用代码，好像错误不在这里 
+//	new_block->next = NULL;
+	return new_block;
+}
+
+static void free_msg_block(struct _msg_t *free_msg)
+{
+//  调试用代码，好像错误不在这里 
+	free_msg->flag = 0;
+	free_msg->next = s_free_msgs;
+	s_free_msgs = free_msg;
+}
 
 // 仅仅将消息放入排队 
 int send_msg(uint pid_to,struct msg_t *pmsg,bool_t need_wait)
-{	
+{
 	struct process_t *to_proc = get_proc(pid_to);	
 	struct thread_t *recv_tail = to_proc->ipc.recv_tail;
 	
@@ -37,11 +56,7 @@ int send_msg(uint pid_to,struct msg_t *pmsg,bool_t need_wait)
 	}
 
 // 创建并初始化消息块 
-	assert(s_free_msgs);
-	struct _msg_t *new_msg = s_free_msgs;
-	s_free_msgs = s_free_msgs->next;
-	
-	new_msg->flag = FLAG_MSG_USEING;
+	struct _msg_t *new_msg = alloc_msg_block();
 	
 	if(need_wait)
 		new_msg->flag |= FLAG_MSG_WAIT;
@@ -50,7 +65,7 @@ int send_msg(uint pid_to,struct msg_t *pmsg,bool_t need_wait)
 
 // 将消息加入指定进程的消息排队 
 	if(to_proc->ipc.msg_tail){
-		new_msg->next = to_proc->ipc.msg_tail;
+		new_msg->next = to_proc->ipc.msg_tail->next;
 		to_proc->ipc.msg_tail->next = new_msg;
 	}else{
 		new_msg->next = new_msg;
@@ -68,12 +83,11 @@ void _send_msg(uint pid,struct msg_t *pmsg)
 
 void wait_msg(int mid,bool_t need_retval)
 {
+	assert(mid != INVALID_HMSG);
 	if(msgn[mid].flag & FLAG_MSG_COMPLETED){
-		msgn[mid].flag = 0;
-		msgn[mid].next = s_free_msgs;
-		s_free_msgs = &msgn[mid];
 		if(need_retval)
 			set_retval(get_cur_tid(),msgn[mid].retval);
+		free_msg_block(&msgn[mid]);
 	}else{
 		if(need_retval)
 			msgn[mid].flag |= FLAG_MSG_RETVAL;
@@ -91,14 +105,13 @@ void _send_wait_msg(uint pid,struct msg_t *pmsg)
 
 void for_wait_msg(int mid,int retval)
 {
+	assert(mid != INVALID_HMSG);
 	if(msgn[mid].flag & FLAG_MSG_WAITING){
 		if(msgn[mid].flag & FLAG_MSG_RETVAL)
 			set_retval(msgn[mid].tid_wait,retval);
 		to_ready(msgn[mid].tid_wait);
-		
-		msgn[mid].flag = 0;
-		msgn[mid].next = s_free_msgs;
-		s_free_msgs = &msgn[mid];
+	
+		free_msg_block(&msgn[mid]);
 	}else{
 		msgn[mid].flag |= FLAG_MSG_COMPLETED;
 		msgn[mid].retval = retval;
@@ -114,16 +127,21 @@ void recv_msg(struct msg_t *pmsg)
 	if(msg_tail){
 		struct _msg_t *msg_head = msg_tail->next;
 		
+		assert(msg_head);
+		
 		*pmsg = msg_head->msg;
-		if(msg_head->flag & FLAG_MSG_WAIT)
-			set_retval_ex(cur_thread,msg_head - msgn);
-		else
-			set_retval_ex(cur_thread,INVALID_HMSG);
-
+		
 		if(msg_tail == msg_head){
 			cur_proc->ipc.msg_tail = NULL;
 		}else{
 			msg_tail->next = msg_head->next;
+		}
+		
+		if(msg_head->flag & FLAG_MSG_WAIT)
+			set_retval_ex(cur_thread,msg_head - msgn);
+		else{
+			set_retval_ex(cur_thread,INVALID_HMSG);
+			free_msg_block(msg_head);
 		}
 	}else{
 		to_block_ex(cur_thread);
@@ -143,21 +161,15 @@ void recv_msg(struct msg_t *pmsg)
 			如果发送该消息的进程需要返回值，则返回该消息的句柄
 			如果该消息不需要返回值，则返回-1 
 */
-/* 该值与内核中的定义必须一致，也就说这里有数据耦合。 */
-#define IPC_RECV		0X01	// 接收消息
-#define IPC_SEND		0X02	// 发送消息 
-#define IPC_WAIT		0X03	// 等待
-#define IPC_SEND_WAIT	0X04	// 发送消息，并等待该消息返回 
-#define IPC_FOR_WAIT	0X05	// 
-
-#define IPC_ATTR_WAIT	0X10	// 只可以与 IPC_SEND 掩码 
-
 int do_ipc()
 {	
 	struct thread_t *thread = get_cur_thread();
 	uint func = thread->context.pushad.ebx;
 	uint pid_to_or_hmsg = thread->context.pushad.ecx;
 	struct msg_t *pmsg = (struct msg_t*)thread->context.pushad.edx;
+	
+// 调试用代码，好像错误不在这里 
+	
 
 	switch(func)
 	{
@@ -170,7 +182,7 @@ int do_ipc()
 	break;
 	case IPC_SEND | IPC_ATTR_WAIT:
 	{
-		int mid = INVALID_HMSG;
+		int mid;
 		mid = send_msg(pid_to_or_hmsg,pmsg,TRUE);
 		set_retval(get_cur_tid(),mid);
 	}
@@ -183,6 +195,8 @@ int do_ipc()
 		wait_msg(pid_to_or_hmsg,TRUE);
 	break;
 	case IPC_FOR_WAIT:
+		if(msgn[pid_to_or_hmsg].flag == 0)
+			printf("!!!!!%d",pid_to_or_hmsg);
 		for_wait_msg(pid_to_or_hmsg,pmsg->p0.iparam);
 	break;
 	default:
@@ -196,6 +210,7 @@ void init_ipc()
 	int i;
 	
 	msgn = (struct _msg_t*)kvirtual_alloc(NULL,_4K);
+	printf("msg_max_count:%d",_4K/sizeof(struct _msg_t));
 	for(i = 0;i < _4K/sizeof(struct _msg_t) - 1;i++)
 	{
 		msgn[i].next = &msgn[i+1];

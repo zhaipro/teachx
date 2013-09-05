@@ -14,9 +14,10 @@ global _restart
 extern _do_iret
 extern _switch_to
 
-; 使用jmp跳到该函数
+
 ; 首先压入错误码
-; 再次压入回调函数 
+; 然后压入回调函数 
+; 再然后使用jmp跳到该函数
 save_restart:
 	pushad
 	push	fs
@@ -56,11 +57,3 @@ _restart:
 	popad 
 	add	esp, 8	; 跳过return_addr,error_code
 	iret
-
-global	_clock_int
-extern	_do_clock_int
-
-_clock_int:
-	sub	esp, 4
-	push	_do_clock_int
-	jmp	save_restart

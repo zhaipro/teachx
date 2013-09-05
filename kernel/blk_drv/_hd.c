@@ -1,7 +1,7 @@
 
-#include "_hd.h"
 #include "_process.h"
 #include "_sys_call.h"
+#include "teachx.h"
 
 int _hd_write_msg(const void *buf,u32 sector,u8 nsect)
 {

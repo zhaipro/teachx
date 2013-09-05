@@ -13,5 +13,7 @@ void init_mm(u32 first_page,u32 last_page);
 void init_process_ctrl();
 void hd_process();
 void mm_process();
+void init_clock();
+void clock_process();
 
 #endif

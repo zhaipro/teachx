@@ -11,6 +11,7 @@
 #include "sched.h"
 #include "string.h"
 #include "stdio.h"
+#include "teachx.h"
 #include "type.h" 
 #include "intc.h"
 #include "ipc.h"
@@ -204,12 +205,6 @@ static void init_tss()
 	ltr(SELECTOR_TSS);
 }
 
-void do_clock_int()
-{
-	do_sched_clock_int();
-	eoi_m();
-}
-
 void init_process_ctrl()
 {
 	int i;
@@ -232,10 +227,6 @@ void init_process_ctrl()
 		tcbn[i].sibling = &tcbn[i+1];
 	}
 	tcbn[i].sibling = NULL;
-	
-	extern void clock_int();
-	set_8259a_idt(INT_CLOCK,clock_int);
-	enable_irq(INT_CLOCK);
 }
 
 static int do_fork(struct thread_t *p_thread)
