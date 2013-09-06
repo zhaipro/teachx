@@ -1,57 +1,52 @@
 
-NASM = D:\nasm\nasm.exe
-NASMFLAGS = -I include/ -f coff
-CC = gcc
-CFLAGS = -Iinclude -fno-builtin -Wimplicit-function-declaration
+export LD = ld
+export LDFLAGS = -r -i
+export NASM = D:\nasm\nasm.exe
+export CC = gcc
+export _CFLAGS = -fno-builtin -Wimplicit-function-declaration
+CINC = include
+CFLAGS = $(_CFLAGS) -I$(CINC)
 
-objects = kernel\kernel_asm.o kernel\kernel.o \
-	mm\mm.o mm\mm_asm.o mm\vasm.o kernel\intc.o \
-	kernel\keyboard.o kernel\keyboard_asm.o kernel\trap.o kernel\trap_asm.o \
-	kernel\vga.o kernel\vga_asm.o kernel\process.o kernel\process_asm.o \
-	kernel\asm.o clib\assert.o \
-	clib\stdio.o clib\string.o clib\stdlib.o kernel\ipc.o kernel\_process.o \
-	kernel\_process_asm.o kernel\sched.o kernel\ipc_asm.o \
-	kernel\blk_drv\blk_sched.o kernel\blk_drv\_hd.o kernel\blk_drv\hd.o \
-	kernel\blk_drv\fdhd_asm.o
+OBJS = kernel\kernel_all.o mm\mm_all.o clib\clib_all.o
 
-all : boot\setup32.bin setup.bin tinix.img
+all : tinix.img
 
-include Makefile.d
-
-kernel.bin : $(objects)
-	@coff -Ttext 0x80509000 -o kernel.bin $(objects)
-tinix.img : boot\boot.bin setup.bin
-	@combine -c tinix.img -af boot\boot.bin
+tinix.img : setup.bin boot\boot.bin
+	combine -c tinix.img -af boot\boot.bin
 	tool\fat12\fat12.exe
-setup.bin : boot\setup16.bin boot\setup32.bin kernel.bin
+
+setup.bin : kernel.bin boot\setup32.bin boot\setup16.bin
 	@combine -n setup.bin -af boot\setup16.bin -s 512 -af boot\setup32.bin -s 2048 -af kernel.bin
 
-mm\mm_asm.o : mm\mm.asm
-	$(NASM) $(NASMFLAGS) -o mm\mm_asm.o mm\mm.asm
+boot\boot.bin boot\setup32.bin boot\setup16.bin : FORCE
+	(cd boot; make)
 
-kernel\asm.o : kernel\asm.asm
-	$(NASM) $(NASMFLAGS) -o kernel\asm.o kernel\asm.asm
+kernel.bin : build_all.o
+	@coff -Ttext 0x80509000 -o kernel.bin build_all.o
 
-kernel\kernel_asm.o : kernel\kernel.asm
-	$(NASM) $(NASMFLAGS) -o kernel\kernel_asm.o kernel\kernel.asm
+build_all.o : $(OBJS)
+	$(LD) $(LDFLAGS) -o build_all.o $(OBJS)
 
-kernel\vga_asm.o : kernel\vga.asm
-	$(NASM) $(NASMFLAGS) -o kernel\vga_asm.o kernel\vga.asm
+kernel\kernel_all.o : FORCE
+	(cd kernel; make)
 
-kernel\trap_asm.o : kernel\trap.asm
-	$(NASM) $(NASMFLAGS) -o kernel\trap_asm.o kernel\trap.asm
+mm\mm_all.o : FORCE
+	(cd mm; make)
 
-kernel\keyboard_asm.o : kernel\keyboard.asm
-	$(NASM) $(NASMFLAGS) -o kernel\keyboard_asm.o kernel\keyboard.asm
+clib\clib_all.o : FORCE
+	(cd clib; make)
 
-kernel\process_asm.o : kernel\process.asm
-	$(NASM) $(NASMFLAGS) -o kernel\process_asm.o kernel\process.asm
+FORCE :
 
-kernel\_process_asm.o : kernel\_process.asm
-	$(NASM) $(NASMFLAGS) -o kernel\_process_asm.o kernel\_process.asm
+dep :
+	(cd boot; make dep)
+	(cd kernel; make dep)
+	(cd mm; make dep)
+	(cd clib; make dep)
 
-kernel\ipc_asm.o : kernel\ipc.asm
-	$(NASM) $(NASMFLAGS) -o kernel\ipc_asm.o kernel\ipc.asm
-
-kernel\blk_drv\fdhd_asm.o : kernel\blk_drv\fdhd.asm
-	$(NASM) $(NASMFLAGS) -o kernel\blk_drv\fdhd_asm.o kernel\blk_drv\fdhd.asm
+clean :
+	rm -f *.bin *.o
+	(cd boot; make clean)
+	(cd kernel; make clean)
+	(cd mm; make clean)
+	(cd clib; make clean)

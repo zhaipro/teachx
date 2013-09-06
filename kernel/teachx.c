@@ -1,23 +1,18 @@
 
+#include "teachx.h"
 #include "_process.h"
 #include "_sys_call.h"
 
-/* 该值与内核中的定义必须一致，也就说这里有数据耦合。 */
-#define IPC_RECV		0X01	// 接收消息
-#define IPC_SEND		0X02	// 发送消息 
-#define IPC_WAIT		0X03	// 等待
-#define IPC_SEND_WAIT	0X04	// 发送消息，并等待该消息返回 
-#define IPC_FOR_WAIT	0X05	// 
 
-#define IPC_ATTR_WAIT	0X10	// 只可以与 IPC_WAIT 掩码 
-
-
-// 定义在 _process.asm 中 
+// 定义在 teachx.asm 中 
 int ipc(uint func,uint pid_to_or_hmsg,struct msg_t *pmsg);
 
 int ipc_recv(struct msg_t *pmsg)
 {
-	return ipc(IPC_RECV,0,pmsg);
+	int mid = ipc(IPC_RECV,0,pmsg);
+	if(mid == -2)
+		mid = ipc(IPC_RECV,0,pmsg);
+	return mid;
 }
 
 int ipc_send(uint pid,struct msg_t *pmsg,bool_t for_wait)
@@ -80,6 +75,35 @@ int fork()
 {
 	struct msg_t msg;
 	msg.type = SC_FORK;
+// 这里是一个BUG
+// 这里的函数运行的用户态，也就是说我们无法直接调用内核函数：get_cur_tid
 	msg.p0.uiparam = get_cur_tid();
 	return ipc_send_wait(PID_PM,&msg);
+}
+
+
+clock_t clock()
+{
+	struct msg_t msg;
+	msg.type = SC_CLK_CLOCK;
+	return ipc_send_wait(PID_CLK,&msg);
+}
+
+void sleep(clock_t wait)
+{
+	struct msg_t msg;
+	msg.type = SC_CLK_SLEEP;
+	msg.p0.uiparam = wait;
+	ipc_send_wait(PID_CLK,&msg);
+}
+
+time_t time(time_t *pt)
+{
+	struct msg_t msg;
+	time_t t;
+	msg.type = SC_CLK_TIME;
+	t = ipc_send_wait(PID_CLK,&msg);
+	if(pt)
+		*pt = t;
+	return t;
 }

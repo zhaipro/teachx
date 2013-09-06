@@ -11,6 +11,7 @@
 #include "sched.h"
 #include "string.h"
 #include "stdio.h"
+#include "teachx.h"
 #include "type.h" 
 #include "intc.h"
 #include "ipc.h"
@@ -41,7 +42,7 @@ struct process_t* get_proc(int pid)
 } 
 
 void to_block_ex(struct thread_t *thread)
-{	
+{
 	if(thread->block_count == 0)
 		sched_erase(thread);
 	thread->block_count ++;
@@ -53,7 +54,7 @@ void to_block(int tid)
 }
 
 void to_ready_ex(struct thread_t *thread)
-{	
+{
 	thread->block_count --;
 	if(thread->block_count == 0)
 		sched_insert(thread);
@@ -68,10 +69,10 @@ void switch_to(struct thread_t *thread)
 {
 	//定义在process.asm中 
 	extern void restart(struct cpu_context_t* context);
-	
-	assert(thread->block_count == 0);
-	
+
+	assert(thread->block_count == 0);	
 	assert(thread->process && s_cur_process);
+
 	if(thread->process->cr3 != s_cur_process->cr3){
 		lcr3(thread->process->cr3);
 	}
@@ -200,14 +201,8 @@ static void init_tss()
 	tss.backlink = 0;
 	tss.ss0 = SELECTOR_KERNEL_DS;
 	tss.esp0 = STACK_TOP;
-	tss.iobase = sizeof(g_tss);
+	tss.iobase = sizeof(tss);
 	ltr(SELECTOR_TSS);
-}
-
-void do_clock_int()
-{
-	do_sched_clock_int();
-	eoi_m();
 }
 
 void init_process_ctrl()
@@ -232,10 +227,6 @@ void init_process_ctrl()
 		tcbn[i].sibling = &tcbn[i+1];
 	}
 	tcbn[i].sibling = NULL;
-	
-	extern void clock_int();
-	set_8259a_idt(INT_CLOCK,clock_int);
-	enable_irq(INT_CLOCK);
 }
 
 static int do_fork(struct thread_t *p_thread)

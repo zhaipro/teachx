@@ -198,7 +198,10 @@ void write_file(struct dir_item_t *dir_item,void *buf,int offset,int size)
 		}
 	}
 }
-
+/*
+printf打印指定长度字符串： 
+	http://www.cnblogs.com/ai616818/archive/2012/05/31/2528472.html
+*/
 void print_dir_item(struct dir_item_t *dir_item,int count)
 {
 	int i;

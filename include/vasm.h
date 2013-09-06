@@ -13,10 +13,8 @@
 // 使用与malloc同样的思想管理虚拟内存 
 // 已使用块[begin,end)
 // 空闲块  [end,end2)
-typedef void (*page_fault_t)(void *begin,void *end,u32 flag);
 struct region_t{
 	u32 flag;
-	page_fault_t page_fault;
 	void *begin;
 	void *end;
 	void *end2; 
@@ -37,7 +35,7 @@ region_hdr_t create_vasr(void *begin,void *end,void *end2);
 region_hdr_t vasm_do_fork(region_hdr_t hdr);
 
 // 从指定区域链中分配一个区域 
-void* alloc_region(region_hdr_t hdr,void *addr,size_t size,page_fault_t page_fault);
+void* alloc_region(region_hdr_t hdr,void *addr,size_t size,u32 flag);
 
 // 暂时没有实现 
 bool_t reset_region(region_hdr_t hdr,const void *addr,uint flag);

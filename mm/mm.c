@@ -4,16 +4,17 @@
 vaddr 代表虚拟地址或线性地址
 paddr 代表物理地址（页框地址） 
 */
-
-#include "type.h"
-#include "kernel.h"
 #include "mm.h"
-#include "process.h"
+#include "_sys_call.h"
 #include "asm.h"
+#include "kernel.h"
+#include "process.h"
 #include "stdio.h"
 #include "string.h"
+#include "teachx.h"
+#include "type.h"
 #include "assert.h"
-#include "_sys_call.h"
+
 
 typedef u32 pte_t;
 
@@ -215,7 +216,7 @@ void do_wp_page(u32 error_code,u32 cr2)
 {
 	uint flag = region_flag(get_cur_proc()->mm.region_hdr,(void*)cr2);
 	
-	printf("(wp:%x",cr2);
+	printf("(pid:%d,wp:%x",get_cur_pid(),cr2);
 	
 	if(flag & FLAG_PAGE_WRITE){
 		switch(flag & ATTR_PAGE_MASK)

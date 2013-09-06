@@ -9,7 +9,6 @@
 */
 #include "kernel.h"
 #include "asm.h"
-#include "memory.h"
 #include "setup.h"
 
 #define _idt (_1M)
@@ -19,7 +18,7 @@
 #define _stack (_1M+_2K+_2K+_4K+_4K)
 #define _knl ((u32*)(_1M+_2K+_2K+_4K+_4K+_4K))
 #define _knl_in_setup ((u32*)(0x80900))
-#define SIZE_KERNEL	(4*_4K)
+#define SIZE_KERNEL	(5*_4K)
 #define _temp_pt0 ((u32*)0)
 
 /*
@@ -115,6 +114,7 @@ static void init_paging()
 {
 	u32 *p;		//既是页表也是也目录表 
 	u32 temp;
+	int i;
 //初始化页目录
 	memzero(_pt512,sizeof(u32)*1024);
 //为了在开启分页后仍然可以继续执行初始化代码 
@@ -137,10 +137,10 @@ static void init_paging()
 //设置栈段
 	_pt513[264] = _stack | PA_P | PA_RW;
 //设置kernel段
-	_pt513[265] = ((u32)_knl) | PA_P | PA_RW;
-	_pt513[266] = ((u32)_knl+_4K) | PA_P | PA_RW;
-	_pt513[267] = ((u32)_knl+2*_4K) | PA_P | PA_RW;
-	_pt513[268] = ((u32)_knl+3*_4K) | PA_P | PA_RW;
+	for(i=0;i<SIZE_KERNEL/_4K;i++)
+	{
+		_pt513[265 + i] = ((u32)_knl + i*_4K) | PA_P | PA_RW;
+	}
 //启动分页机制 
 	lcr3((u32)_pt512);
 	enable_pagine();

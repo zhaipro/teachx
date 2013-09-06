@@ -4,6 +4,7 @@
 /*
 这里输出所有的关于进程管理的用户接口 
 */
+#include "config.h"
 #include "type.h"
 
 union p_t{
