@@ -6,6 +6,7 @@
 *.img
 *.exe
 *~
+*.d
 
 ReadSector.txt
 c.img
