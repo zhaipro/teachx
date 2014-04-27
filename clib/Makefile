@@ -9,8 +9,8 @@ clib_all.o : $(OBJS)
 
 include Makefile.d
 
-dep :
+dep Makefile.d:
 	gcc -M -I../include *.c > Makefile.d
 
 clean :
-	rm -f *.o
+	rm -f *.o Makefile.d

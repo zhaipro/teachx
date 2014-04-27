@@ -20,8 +20,8 @@ setup16.bin : setup16.asm
 setup32_asm.o : setup32.asm
 	$(NASM) -f coff -o setup32_asm.o setup32.asm
 
-dep :
+dep Makefile.d:
 	gcc -M -I../include *.c > Makefile.d
 
 clean :
-	rm -f *.o *.bin
+	rm -f *.o *.bin Makefile.d

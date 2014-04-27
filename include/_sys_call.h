@@ -23,6 +23,9 @@
 #define PID_PM	04	// Process Manage
 #define PID_CLK	04	// Clock
 
+// 模块内部使用的消息类型值必须大于此值 
+// 模块对外开放的消息类型值必须小于此值 
+#define SC_USER					1000 
 
 // 进程管理进程的消息类型 
 #define SC_PTHREAD_KEY_CREATE	01

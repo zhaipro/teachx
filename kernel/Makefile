@@ -34,11 +34,11 @@ process_asm.o : process.asm
 teachx_asm.o : teachx.asm
 	$(NASM) $(NASMFLAGS) -o teachx_asm.o teachx.asm
 
-dep :
+dep Makefile.d:
 	# 在指定路径是必须使用/
 	gcc -M -I../include *.c > Makefile.d
 	(cd blk_drv;make dep)
 
 clean :
+	rm -f *.o Makefile.d
 	(cd blk_drv; make clean)
-	rm -f *.o

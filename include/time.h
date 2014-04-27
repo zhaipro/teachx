@@ -5,6 +5,8 @@
 typedef long clock_t;
 typedef long time_t;
 
+#define CLOCKS_PER_SEC	((clock_t)1000)
+
 struct tm
 {
 	int	tm_sec;		/* Seconds: 0-59 */

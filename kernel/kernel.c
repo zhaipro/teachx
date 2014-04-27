@@ -19,6 +19,7 @@ static void sys_idle_proc()
 	
 	while(1)
 	{
+		// 暂时不允许所有进程都被堵塞。 
 		for(i=0;i<10000000;i++)
 			nop();
 		printf("(1)");
@@ -30,7 +31,7 @@ static void sys_idle_proc()
 
 static void test_proc2()
 {
-	int i,j;
+	int i;
 	void *buf;
 	struct msg_t msg;
 	int mid;
@@ -44,25 +45,21 @@ static void test_proc2()
 	
 	for(i=0;;i++)
 	{
-		for(j=0;j<500000;j++)
-			nop();
 		printf("(2%d)",i);
-		sleep(1000);
+		sleep(1 * CLOCKS_PER_SEC);
 	}
 }
 
 static void test_proc3()
 {
-	int i,j;
+	int i;
 	
 	sti();
 	
 	for(i=0;;i++)
 	{
-		for(j=0;j<1000000;j++)
-			nop();
 		printf("(3%d)",i);
-		sleep(500);
+		sleep(0.5 * CLOCKS_PER_SEC);
 	}
 }
 

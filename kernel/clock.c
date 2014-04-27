@@ -15,9 +15,11 @@
 #define PORT_CLOCK_1 0X41			// 实际上我们不会设置计数器1和2 
 #define PORT_CLOCK_2 0X42			// 只是为了完整性才列在这里 
 #define PORT_CLOCK_MODE	0X43
-
-#define INT_HZ		100
 #define CLOCK_HZ	11931800
+
+/* 控制区 */
+#define INT_HZ		100				// 时钟中断的频率 
+
 #define LATCH		(CLOCK_HZ/INT_HZ)
 
 /*
@@ -39,7 +41,7 @@ static clock_t s_clock = 0;
 static clock_t s_wait = 0;
 
 
-#define SC_CLK_FOR_SLEEP	10001
+#define SC_CLK_FOR_SLEEP	(SC_USER + 1)
 
 void do_clock_int()
 {
@@ -171,27 +173,28 @@ void clock_process()
 	struct for_sleep_t list[MAX_THREAD_COUNT + 1];
 	
 	
-	struct msg_t msg;
-	int mid;
-	int retval;
-	
 	startup_time = time_by_cmos();
+	init_list(list,sizeof(list)/sizeof(list[0]));
 	
-	init_list(list,MAX_THREAD_COUNT + 1);
-	
-	while(1)
+	while(TRUE)
 	{
+		struct msg_t msg;
+		int mid;
+		int retval;
+		
 		mid = ipc_recv(&msg);
 		switch(msg.type)
 		{
 		case SC_CLK_CLOCK:
-			retval = s_clock - startup_clock[msg.pid_from];
+			// 这里的计算顺序是经过深思熟虑的。 
+			retval = (s_clock - startup_clock[msg.pid_from])*CLOCKS_PER_SEC/INT_HZ;
 		break;
 		case SC_CLK_INIT:
 			startup_clock[msg.pid_from] = s_clock;
 		break;
 		case SC_CLK_SLEEP:
-			insert(mid,s_clock + msg.p0.uiparam);
+			// 总之先乘后除就是了。 
+			insert(mid,s_clock + msg.p0.uiparam*INT_HZ/CLOCKS_PER_SEC);
 			mid = INVALID_HMSG;
 		break;
 		case SC_CLK_TIME:

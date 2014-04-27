@@ -38,6 +38,9 @@ clib\clib_all.o : FORCE
 
 FORCE :
 
+# 当依赖关系文件不存在时，make会自动创建，
+# 但是make并不会自动的更新依赖文件。 
+# 这里就是提供一个手动更新依赖关系文件的方法。 
 dep :
 	(cd boot; make dep)
 	(cd kernel; make dep)
