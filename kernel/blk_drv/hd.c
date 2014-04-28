@@ -9,17 +9,21 @@ win代表温切斯特(Winchester)硬盘
 #include "process.h"
 #include "_sys_call.h"
 
-#define PORT_HD_DATA	0X1F0	//数据寄存器 
-#define PORT_HD_ERROR	0X1F1	//错误寄存器
-#define PORT_HD_PRECOMP	0X1F1 
-#define PORT_HD_NSECTOR	0X1F2	//扇区数寄存器。完成一个扇区的操作该寄存器就自动减一 
-#define PORT_HD_SECTOR	0X1F3	//扇区号寄存器 
-#define PORT_HD_LCYL	0X1F4	//柱面号寄存器LOW 
-#define PORT_HD_HCYL	0X1F5	//柱面号寄存器HIGH
-#define PORT_HD_CURRENT	0X1F6	// 
-#define PORT_HD_STATUS	0X1F7
-#define PORT_HD_COMMAND	0X1F7 
-#define PORT_HD_CMD		0X3F6	
+#define PORT_HD_DATA		0X1F0	// 数据寄存器（读写） 
+#define PORT_HD_ERROR		0X1F1	// 错误寄存器（读） 
+#define PORT_HD_FEATURES	0X1F1	// （写） 
+#define PORT_HD_PRECOMP		0X1F1	// （写） 
+#define PORT_HD_NSECTOR		0X1F2	// 扇区数寄存器。完成一个扇区的操作该寄存器就自动减一 
+#define PORT_HD_SECTOR		0X1F3	// 扇区号寄存器 
+#define PORT_HD_LBA_LOW		0x1F3	// LBA寻址模式 
+#define PORT_HD_LCYL		0X1F4	// 柱面号寄存器LOW 
+#define PORT_HD_LBA_MID		0x1F4	// LBA寻址模式 
+#define PORT_HD_HCYL		0X1F5	// 柱面号寄存器HIGH
+#define PORT_HD_LBA_HIGH	0x1F5	// LBA寻址模式 
+#define PORT_HD_CURRENT		0X1F6	// 
+#define PORT_HD_STATUS		0X1F7	// （读） 
+#define PORT_HD_COMMAND		0X1F7	// （写） 
+#define PORT_HD_CMD			0X3F6	
 
 #define WIN_RESTORE	0X10	//默认步进速率 35us 
 #define WIN_READ	0X20	//忽略ECC码，允许重试
@@ -92,7 +96,31 @@ static u32 win_result()
 }
 
 //hard disk out
-static void hd_out(u32 sector,u8 nsect,u8 cmd)
+static void hd_out_lba(u32 sector,u8 nsect,u8 cmd)
+{
+	#define LBA_MODE	0x80
+
+// 参数sector以0为起点，然而硬盘驱动器则以1为起点。 
+	sector ++;
+	
+	if(!hd_ctrl_ready()){
+		end_req(FALSE);
+	}
+	
+	out_p(PORT_HD_CMD,s_ctl);
+	out_p(PORT_HD_PRECOMP,s_pcom);
+	out_p(PORT_HD_NSECTOR,nsect);
+	out_p(PORT_HD_LBA_LOW,sector);
+	out_p(PORT_HD_LBA_MID,sector>>8);
+	out_p(PORT_HD_LBA_HIGH,sector>>16);
+	out_p(PORT_HD_CURRENT,0xa0 | LBA_MODE | sector>>24);	//第0个驱动器 
+	out_p(PORT_HD_COMMAND,cmd);
+}
+
+// 使用chs参数来指定地址
+// 这里已经不在使用这个函数，而是使用hd_out_lba 
+// hard disk out
+static void hd_out_chs(u32 sector,u8 nsect,u8 cmd)
 {
 	u32 trk = sector / s_sec_per_trk;
 	u32 cyl = trk / s_heads;
@@ -153,7 +181,7 @@ void hd_read(void *buf,u32 sector,u8 nsect)
 {
 	s_cur_buf = buf;
 	do_hd = hd_read_int;
-	hd_out(sector,nsect,WIN_READ);
+	hd_out_lba(sector,nsect,WIN_READ);
 }
 
 //向硬盘发送读取请求 
@@ -164,7 +192,7 @@ void hd_write(void *buf,u32 sector,u8 nsect)
 	
 	s_cur_buf = buf;
 	do_hd = hd_write_int;
-	hd_out(sector,nsect,WIN_WRITE);
+	hd_out_lba(sector,nsect,WIN_WRITE);
 	for(i=0;i<3000 && !(r=in_p(PORT_HD_STATUS)&HD_STATUS_DRQ);i++)
 		;
 	if(!r)

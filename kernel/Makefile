@@ -13,8 +13,10 @@ kernel_all.o : $(OBJS)
 
 include Makefile.d
 
-blk_drv/blk_drv_all.o :
+blk_drv/blk_drv_all.o : FORCE
 	(cd blk_drv; make)
+
+FORCE :
 
 asm.o : asm.asm
 	$(NASM) $(NASMFLAGS) -o asm.o asm.asm
