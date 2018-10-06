@@ -1,0 +1,2 @@
+boot: floppy
+floppya: image="teachx.img", status=inserted
