@@ -1,7 +1,11 @@
 
-all: boot.bin
+all: boot.bin setup.bin
 
-boot.bin: boot.asm utils.asm
+
+boot.bin: boot.asm utils.asm include/load.inc
+	$(ASM) $< -o $@
+
+setup.bin: setup.asm utils.asm include/load.inc
 	$(ASM) $< -o $@
 
 clean:
