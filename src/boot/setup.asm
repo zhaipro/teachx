@@ -25,10 +25,16 @@ mov eax, cr0
 or  eax, 1
 mov cr0, eax
 
+mov ax, 16
+mov ds, ax
+mov ss, ax
+mov esp, PhyOfOS
+
 ; 正式进入保护模式
                     ; segment-descriptor        (INDEX:TI:RPL)
 sel_cs0 equ 0x0008  ; select for code segment 0 (  001:0 :00)
-jmp dword sel_cs0:(PhyOfOS + LABEL_PM_START)
+; setup 到此结束了吗? No, 是汇编到此结束!
+jmp dword sel_cs0:(PhyOfOS + 512)
 
 %include "utils.asm"
 
@@ -51,7 +57,3 @@ gdt_48:
     ; PhyOfOS + gdt is the real gdt
 
 Message db "Setup ...", 00
-
-[BITS 32]
-LABEL_PM_START:
-    jmp $

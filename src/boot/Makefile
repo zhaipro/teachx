@@ -1,12 +1,25 @@
 
 all: boot.bin setup.bin
 
-
 boot.bin: boot.asm utils.asm include/load.inc
 	$(ASM) $< -o $@
 
-setup.bin: setup.asm utils.asm include/load.inc
+setup.bin: setup.asm.bin setup.c.bin
+	cp setup.asm.bin setup.bin
+	dd if=setup.c.bin of=$@ bs=512 seek=1 conv=notrunc
+
+setup.asm.bin: setup.asm utils.asm include/load.inc
 	$(ASM) $< -o $@
 
+setup.c.bin: setup.o
+	#                                   越小越好, 还有其它方法吗?
+	$(LD) -o setup.tmp.o -Ttext 0x80200 --section-alignment 1 $<
+	objcopy -O binary -R .note -R .comment setup.tmp.o $@
+
+include Makefile.d
+
+Makefile.d: *.c
+	$(CC) -M *.c > Makefile.d
+
 clean:
-	rm -f *.bin
+	rm -f *.bin *.o *.d

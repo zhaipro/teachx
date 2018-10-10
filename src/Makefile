@@ -1,5 +1,6 @@
 
 export ASM = nasm
+export CC = gcc
 
 all: teachx.img
 
