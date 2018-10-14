@@ -1,6 +1,9 @@
 
 export ASM = nasm
+#                       获取绝对路径
+export C_INCLUDE_PATH = $(shell readlink -f ./include)
 export CC = gcc
+export LDFLAGS = -r -i
 
 all: teachx.img
 
@@ -29,3 +32,4 @@ FORCE:
 clean:
 	rm -f teachx.img *.bin
 	cd boot && $(MAKE) clean
+	cd vga && $(MAKE) clean
