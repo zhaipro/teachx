@@ -1,3 +1,3 @@
 
-all run debug clean:
+all run debug clean remake rerun:
 	cd src && $(MAKE) $@

@@ -20,6 +20,10 @@ run: all
 debug: all
 	bochsdbg -q
 
+remake: clean all
+
+rerun: clean run
+
 FORCE:
 
 clean:
