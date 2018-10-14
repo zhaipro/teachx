@@ -33,3 +33,4 @@ clean:
 	rm -f teachx.img *.bin
 	cd boot && $(MAKE) clean
 	cd vga && $(MAKE) clean
+	cd lib && $(MAKE) clean

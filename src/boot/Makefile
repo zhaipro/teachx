@@ -11,7 +11,7 @@ setup.bin: setup.asm.bin setup.c.bin
 setup.asm.bin: setup.asm utils.asm include/load.inc
 	$(ASM) $< -o $@
 
-setup.c.bin: setup.o ../vga/vga.o
+setup.c.bin: setup.o ../vga/vga.o ../lib/asm.o
 	$(LD) $(LDFLAGS) -o setup.all.o $^
 	#                                   越小越好, 还有其它方法吗?
 	$(LD) -o setup.tmp.o -Ttext 0x80200 --section-alignment 1 setup.all.o
@@ -19,6 +19,9 @@ setup.c.bin: setup.o ../vga/vga.o
 
 ../vga/vga.o: FORCE
 	cd ../vga && $(MAKE)
+
+../lib/asm.o: FORCE
+	cd ../lib && $(MAKE)
 
 include Makefile.d
 
