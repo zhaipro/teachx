@@ -27,7 +27,10 @@ mov cr0, eax
 
 mov ax, 16
 mov ds, ax
+mov es, ax
+mov fs, ax
 mov ss, ax
+
 mov esp, PhyOfOS
 
 ; 正式进入保护模式

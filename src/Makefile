@@ -4,6 +4,7 @@ export ASM = nasm
 export C_INCLUDE_PATH = $(shell readlink -f ./include)
 export CC = gcc
 export LDFLAGS = -r -i
+export CFLAGS = -O
 
 all: teachx.img
 
