@@ -1,6 +1,6 @@
 
 export ASM = nasm
-export CC = gcc
+export CC = gcc -std=c99
 
 all: teachx.img
 
@@ -27,5 +27,9 @@ rerun: clean run
 FORCE:
 
 clean:
-	rm -f teachx.img *.bin
-	cd boot && $(MAKE) clean
+	which find
+	find . \( -name *.bin \)
+	find . \( -name *.o \)
+	find . \( -name *.bin -o -name *.img -o -name *.o -o -name *.d \) -print0 | xargs -0 rm -f
+	find . \( -name *.bin \)
+#	find . \( -name *.img -o -name *.bin -o -name *.o -o -name *.d \) -print0 | xargs -0 rm -f

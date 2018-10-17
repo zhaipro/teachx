@@ -20,6 +20,3 @@ include Makefile.d
 
 Makefile.d: *.c
 	$(CC) -M *.c > Makefile.d
-
-clean:
-	rm -f *.bin *.o *.d
