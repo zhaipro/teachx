@@ -9,6 +9,7 @@ global _hlt
 global _lcr3
 global _scr0
 global _lcr0
+global _jmp
 
 [SECTION .text]
 [BITS 32]
@@ -40,3 +41,7 @@ _lcr0:
     mov eax, [esp + 4]
     mov cr0, eax
     ret
+
+; void jmp(uint32_t addr);
+_jmp:
+    jmp [esp + 4]

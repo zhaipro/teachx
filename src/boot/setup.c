@@ -1,3 +1,4 @@
+
 #include <string.h>
 
 #include "asm.h"
@@ -19,7 +20,8 @@ void start()
     vga_write_line(3, "Hello C language!");
     init_page_table();
     vga_write_line(4, "Hello virtual memory!");
-    hlt();
+    // 跳入内核
+    jmp(OFFSET_KERNEL);
 }
 
 static void init_page_table()
@@ -28,6 +30,7 @@ static void init_page_table()
     memset((void*)page_directory, 0, sizeof(uint32_t) * 1024);
     // 页目录也是页表
     ((uint32_t*)page_directory)[0] = page_directory | PAGE_PRESENT;
+    ((uint32_t*)page_directory)[KERNEL_SEGMENT / _4M] = page_directory | PAGE_PRESENT;
     // 为了在开启分页后仍然可以继续执行初始化代码
     // 所以，前 1M 的映射方法如下
     for(int i=2; i<(_1M / _4K); i++)

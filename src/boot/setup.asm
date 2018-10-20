@@ -44,15 +44,15 @@ jmp dword sel_cs0:(PhyOfOS + 512)
 gdt:
     dw 0, 0, 0, 0   ; dummy
 
-    dw 0x07FF       ; 8Mb - limit=2047 (2048*4096=8Mb)
+    dw 0xFFFF       ; 4Gb - limit=0xFFFFF (0x100000*4096=4Gb)
     dw 0x0000       ; base address=0
     dw 0x9A00       ; code read/exec
-    dw 0x00C0       ; granularity=4096, 386
+    dw 0x00CF       ; granularity=4096, 386
 
-    dw 0x07FF       ; 8Mb - limit=2047 (2048*4096=8Mb)
+    dw 0xFFFF       ; 4Gb
     dw 0x0000       ; base address=0
     dw 0x9200       ; data read/write
-    dw 0x00C0       ; granularity=4096, 386
+    dw 0x00CF       ; granularity=4096, 386
 
 gdt_48:
     dw 0x800            ; gdt limit=2048, 256 GDT entries

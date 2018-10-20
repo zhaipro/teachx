@@ -11,5 +11,6 @@ void hlt();
 void lcr3(uint32_t page_directory);
 uint32_t scr0();
 void lcr0(uint32_t cr0);
+void jmp(uint32_t addr);
 
 #endif
