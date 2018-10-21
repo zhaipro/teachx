@@ -19,7 +19,7 @@ os.bin: boot/boot.bin boot/setup.bin kernel.bin
 boot/boot.bin: FORCE
 	cd boot && $(MAKE)
 
-OBJS = kernel/kernel.o lib/asm.o vga/vga.o
+OBJS = kernel/kernel.o lib/asm.o vga/vga.o lib/stdio.o
 
 kernel.bin: $(OBJS)
 	$(LD) -o kernel.o -Ttext 0xc0080600 --section-alignment 4 $^
