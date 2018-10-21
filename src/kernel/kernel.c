@@ -6,6 +6,6 @@
 void start()
 {
     vga_set_cursor_pos(5 * 80);
-    printk("Hello kernel!%c", '\n');
+    printk("%d: Hello kernel!\n", 5);
     hlt();
 }

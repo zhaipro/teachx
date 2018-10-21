@@ -1,6 +1,28 @@
 
+#include <string.h>
+
 #include "stdio.h"
 #include "vga.h"
+
+static char *itoa(int value, char *string)
+{
+    const int radix = 10;
+    char *first = string;
+    do{
+        *string = value % radix + '0';
+        value /= radix;
+        string++;
+    }while(value);
+    *string = '\0';
+    // 生成的数字是逆序的，所以要回转
+    string--;
+    for (char temp; string > first; first++, string--) {
+        temp = *first;
+        *first = *string;
+        *string = temp;
+    }
+    return string;
+}
 
 typedef int *va_list;
 
@@ -21,6 +43,9 @@ int vsprintf(char *buf, const char *fmt, va_list args)
             *str = *args;
             str++;
             break;
+        case 'd':
+            itoa(*args, str);
+            str += strlen(str);
         default:
             break;
         }
