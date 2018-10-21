@@ -4,6 +4,7 @@
 
 void start()
 {
-    vga_write_line(5, "Hello kernel!");
+    vga_set_cursor_pos(5 * 80);
+    vga_write("Hello kernel!\n");
     hlt();
 }

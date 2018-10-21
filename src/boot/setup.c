@@ -17,9 +17,10 @@ void start()
     // 1. 打招呼
     // 2. 测试是否能够调用函数
     // 3. 测试增加.data
-    vga_write_line(3, "Hello C language!");
+    vga_set_cursor_pos(3 * 80);
+    vga_write("Hello C language!\n");
     init_page_table();
-    vga_write_line(4, "Hello virtual memory!");
+    vga_write("Hello virtual memory!\n");
     // 跳入内核
     jmp(OFFSET_KERNEL);
 }
