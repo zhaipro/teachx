@@ -7,5 +7,6 @@
 typedef uint16_t port_t;
 
 void out(port_t port, uint8_t value);
+void hlt();
 
 #endif

@@ -3,6 +3,7 @@
 ; typedef uint16_t port_t;
 
 global _out
+global _hlt
 
 [SECTION .text]
 [BITS 32]
@@ -13,4 +14,9 @@ _out:
     mov dx, [esp + 4]   ; port
     mov al, [esp + 8]   ; value
     out dx, al
+    ret
+
+; 停机
+_hlt:
+    hlt
     ret
