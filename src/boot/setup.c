@@ -33,8 +33,8 @@ static void init_page_table()
     ((uint32_t*)page_directory)[0] = page_directory | PAGE_PRESENT;
     ((uint32_t*)page_directory)[KERNEL_SEGMENT / _4M] = page_directory | PAGE_PRESENT;
     // 为了在开启分页后仍然可以继续执行初始化代码
-    // 所以，前 1M 的映射方法如下
-    for(int i=2; i<(_1M / _4K); i++)
+    // 所以，前 nM 的映射方法如下
+    for(int i=2; i<KERNEL_SEGMENT / _4M; i++)
     {
         ((uint32_t*)page_directory)[i] = (i * _4K) | PAGE_WRITE;
     }

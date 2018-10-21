@@ -10,5 +10,7 @@
 // 内核所在段
 #define KERNEL_SEGMENT _3G
 #define OFFSET_KERNEL (KERNEL_SEGMENT + 0x80600)
+// 内核之前的 4M 内存用于存放页目录表(Page Directory Table)
+#define PDT (KERNEL_SEGMENT - _4M)
 
 #endif
