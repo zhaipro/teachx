@@ -6,6 +6,7 @@
 
 typedef uint16_t port_t;
 
+uint8_t in(port_t port);
 void out(port_t port, uint8_t value);
 void hlt();
 void lcr3(uint32_t page_directory);

@@ -19,13 +19,13 @@ os.bin: boot/boot.bin boot/setup.bin kernel.bin
 boot/boot.bin: FORCE
 	cd boot && $(MAKE)
 
-OBJS = kernel/kernel.o lib/asm.o vga/vga.o lib/stdio.o
+OBJS = kernel/all.o lib/all.o vga/vga.o
 
 kernel.bin: $(OBJS)
 	$(LD) -o kernel.o -Ttext 0xc0080600 --section-alignment 4 $^
 	objcopy -O binary -R .note -R .comment kernel.o $@
 
-kernel/kernel.o: FORCE
+kernel/all.o: FORCE
 	cd kernel && $(MAKE)
 
 lib/asm.o: FORCE

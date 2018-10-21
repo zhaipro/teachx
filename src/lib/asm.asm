@@ -4,6 +4,7 @@
 ; s -> save
 ; l -> load
 
+global _in
 global _out
 global _hlt
 global _lcr3
@@ -13,6 +14,14 @@ global _jmp
 
 [SECTION .text]
 [BITS 32]
+
+; 读出指定端口
+; uint8_t in(port_t port);
+_in:
+    mov edx, [esp + 4]
+    xor eax, eax
+    in  al, dx
+    ret
 
 ; 写入指定端口
 ; void out(port_t port, uint8_t value);

@@ -1,5 +1,6 @@
 
-all: kernel.o
+all.o: kernel.o memory.o
+	$(LD) $(LDFLAGS) -o $@ $^
 
 include Makefile.d
 
