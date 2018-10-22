@@ -4,6 +4,7 @@
 #include "asm.h"
 #include "bios.h"
 #include "cpu.h"
+#include "kernel.h"
 #include "settings.h"
 #include "stdio.h"
 
@@ -23,6 +24,18 @@ static uint32_t get_free_page()
     // 内存管理员只负责管理 1M 以后的内存，之前的交给内核
     static uint32_t s_start = _1M / _4K;
     return (s_start++) * _4K;
+}
+
+// https://gcc.gnu.org/onlinedocs/gcc/x86-Function-Attributes.html
+__attribute__((interrupt)) static void page_fault(void *_, uint32_t error_code)
+{
+    static int time = 0;
+    if (time == 0)
+        printk("Hello interrupt\n");
+    printk("page fault, error: %d\n", error_code);
+    time ++;
+    if (time >= 3)
+        hlt();
 }
 
 static void init_pdt()
@@ -55,5 +68,9 @@ void init_memory()
     s_total = get_total_memory();
     printk("Total memory: %d K\n", s_total);
     init_pdt();
+    // 加载页故障修理工
+    set_trap_gate(INT_VECTOR_PAGE_FAULT, page_fault);
     printk("Init memory ok!\n");
+    // 测试内存管理员是否能发现我犯下的错误
+    ((int*)0)[0] = 0;
 }
