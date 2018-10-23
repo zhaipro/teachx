@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include "cpu.h"
+
 typedef uint16_t port_t;
 
 uint8_t in(port_t port);
@@ -13,5 +15,6 @@ void lcr3(uint32_t page_directory);
 uint32_t scr0();
 void lcr0(uint32_t cr0);
 void jmp(uint32_t addr);
+void lidt(struct idtptr_t *idtptr);
 
 #endif

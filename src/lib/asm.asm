@@ -11,6 +11,7 @@ global _lcr3
 global _scr0
 global _lcr0
 global _jmp
+global _lidt
 
 [SECTION .text]
 [BITS 32]
@@ -54,3 +55,9 @@ _lcr0:
 ; void jmp(uint32_t addr);
 _jmp:
     jmp [esp + 4]
+
+; void lidt(struct idtptr_t *idtptr)
+_lidt:
+    mov eax, [esp + 4]
+    lidt [eax]
+    ret
