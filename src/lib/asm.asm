@@ -12,6 +12,7 @@ global _scr0
 global _lcr0
 global _jmp
 global _lidt
+global _scr2
 
 [SECTION .text]
 [BITS 32]
@@ -60,4 +61,9 @@ _jmp:
 _lidt:
     mov eax, [esp + 4]
     lidt [eax]
+    ret
+
+; uint32_t scr2();
+_scr2:
+    mov eax, cr2
     ret

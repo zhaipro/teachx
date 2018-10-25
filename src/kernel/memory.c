@@ -32,7 +32,7 @@ __attribute__((interrupt)) static void page_fault(void *_, uint32_t error_code)
     static int time = 0;
     if (time == 0)
         printk("Hello interrupt\n");
-    printk("page fault, error: %d\n", error_code);
+    printk("page fault, error: %d, addr: %d\n", error_code, scr2());
     time ++;
     if (time >= 3)
         hlt();
@@ -72,5 +72,5 @@ void init_memory()
     set_trap_gate(INT_VECTOR_PAGE_FAULT, page_fault);
     printk("Init memory ok!\n");
     // 测试内存管理员是否能发现我犯下的错误
-    ((int*)0)[0] = 0;
+    ((int*)0)[1] = 0;
 }
