@@ -2,6 +2,7 @@
 #ifndef _SETTINGS_H_
 #define _SETTINGS_H_
 
+#define _1K (1u << 10)
 #define _4K (4u << 10)
 #define _1M (1u << 20)
 #define _4M (4u << 20)

@@ -29,13 +29,9 @@ static uint32_t get_free_page()
 // https://gcc.gnu.org/onlinedocs/gcc/x86-Function-Attributes.html
 __attribute__((interrupt)) static void page_fault(void *_, uint32_t error_code)
 {
-    static int time = 0;
-    if (time == 0)
-        printk("Hello interrupt\n");
-    printk("page fault, error: %d, addr: %d\n", error_code, scr2());
-    time ++;
-    if (time >= 3)
-        hlt();
+    uint32_t cr2 = scr2();
+    printk("page fault, error: %d, addr: %d K\n", error_code, cr2 / _1K);
+    ((uint32_t*)PDT)[cr2 / _4K] = get_free_page() | PAGE_PRESENT;
 }
 
 static void init_pdt()
@@ -70,7 +66,8 @@ void init_memory()
     init_pdt();
     // 加载页故障修理工
     set_trap_gate(INT_VECTOR_PAGE_FAULT, page_fault);
+    // 测试内存管理员是否能发现我需要，但却不存在的内存
+    ((int*)_4M)[0] = 0;
+    // 并让修理工为我分配
     printk("Init memory ok!\n");
-    // 测试内存管理员是否能发现我犯下的错误
-    ((int*)0)[1] = 0;
 }
