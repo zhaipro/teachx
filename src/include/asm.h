@@ -17,5 +17,6 @@ void lcr0(uint32_t cr0);
 void jmp(uint32_t addr);
 void lidt(struct idtptr_t *idtptr);
 uint32_t scr2();
+void nop();
 
 #endif

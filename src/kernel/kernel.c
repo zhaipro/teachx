@@ -16,6 +16,7 @@ void start()
     printk("Hello kernel!\n");
     init();
     init_memory();
+    nop();
     hlt();
 }
 
