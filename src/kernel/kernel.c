@@ -19,7 +19,7 @@ void start()
     hlt();
 }
 
-static void init()
+static void init_idt()
 {
     // IDT —— interrupt description table
     // 加载中断向量表
@@ -28,4 +28,11 @@ static void init()
     idtptr.limit = 256 * 8;
     idtptr.addr = (void*)IDT;
     lidt(&idtptr);
+}
+
+static void init()
+{
+    extern void time_init();
+    init_idt();
+    time_init();
 }

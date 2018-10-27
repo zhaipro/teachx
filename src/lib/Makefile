@@ -1,7 +1,7 @@
 
 ASMFLAGS = -f coff
 
-all.o: asm.o stdio.o bios.o
+all.o: asm.o stdio.o bios.o time.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
 asm.o: asm.asm
