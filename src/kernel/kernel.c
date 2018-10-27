@@ -9,6 +9,7 @@
 #include "vga.h"
 
 static void init();
+static void initial_process();
 
 void start()
 {
@@ -16,7 +17,7 @@ void start()
     printk("Hello kernel!\n");
     init();
     init_memory();
-    hlt();
+    initial_process();
 }
 
 static void init_idt()
@@ -33,6 +34,16 @@ static void init_idt()
 static void init()
 {
     extern void init_8259A();
+    extern void init_timer();
     init_idt();
     init_8259A();
+    init_timer();
+}
+
+static void initial_process()
+{
+    // 开启中断
+    sti();
+    while(1)
+        hlt();
 }

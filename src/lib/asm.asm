@@ -14,6 +14,7 @@ global _jmp
 global _lidt
 global _scr2
 global _nop
+global _sti
 
 [SECTION .text]
 [BITS 32]
@@ -71,4 +72,8 @@ _scr2:
 
 _nop:
     nop
+    ret
+
+_sti:
+    sti
     ret

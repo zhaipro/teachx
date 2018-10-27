@@ -18,5 +18,12 @@ void jmp(uint32_t addr);
 void lidt(struct idtptr_t *idtptr);
 uint32_t scr2();
 void nop();
+// 开启中断
+void sti();
+
+// 延迟输出
+#define out_p(port, value) do{  \
+    out(port, value); nop();    \
+}while(0)
 
 #endif
