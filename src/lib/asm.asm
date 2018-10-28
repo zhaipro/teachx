@@ -16,6 +16,9 @@ global _sgdt
 global _scr2
 global _nop
 global _sti
+global _seflags
+global _iret
+global _lxs
 
 [SECTION .text]
 [BITS 32]
@@ -82,4 +85,22 @@ _nop:
 
 _sti:
     sti
+    ret
+
+_seflags:
+    pushf
+    pop eax
+    ret
+
+_iret:
+    mov esp, [esp + 4]
+    iret
+
+; load ds, es, fs, gs
+_lxs:
+    mov eax, [esp + 4]
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
     ret

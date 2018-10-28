@@ -42,17 +42,15 @@ static void show_gdt()
 static void init()
 {
     extern void init_8259A();
-    extern void init_timer();
+    extern void init_sched();
     init_idt();
     init_8259A();
-    init_timer();
+    init_sched();
 }
 
 static void initial_process()
 {
     show_gdt();
-    // 开启中断
-    sti();
-    while(1)
-        hlt();
+    extern void run();
+    run();
 }

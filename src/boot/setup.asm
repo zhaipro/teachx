@@ -56,8 +56,11 @@ gdt:
     dw 0x9200       ; data read/write
     dw 0x00CF       ; granularity=4096, 386
 
+    dw 0, 0, 0, 0   ; 内核进程代码段，由内核对其进行初始化
+    dw 0, 0, 0, 0   ; 内核进程数据段
+
 gdt_48:
-    dw 3 * 8            ; gdt limit=24, 3 GDT entries
+    dw 5 * 8            ; gdt limit=40, 5 GDT entries
     dd PhyOfOS + gdt    ; gdt base
     ; PhyOfOS + gdt is the real gdt
 

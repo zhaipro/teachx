@@ -21,6 +21,9 @@ uint32_t scr2();
 void nop();
 // 开启中断
 void sti();
+uint32_t seflags();
+void iret(void *esp);
+void lxs(uint32_t xs);
 
 // 延迟输出
 #define out_p(port, value) do{  \

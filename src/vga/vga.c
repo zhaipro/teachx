@@ -34,11 +34,11 @@ int _vga_write(int addr, const char* str)
             addr += 2;
         }
     }
-    vga_set_cursor_pos(addr >> 1);
     return addr;
 }
 
 int vga_write(const char* str)
 {
-    _vga_write(s_cursor_pos * 2, str);
+    int addr = _vga_write(s_cursor_pos * 2, str);
+    vga_set_cursor_pos(addr >> 1);
 }
