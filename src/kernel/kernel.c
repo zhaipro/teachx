@@ -36,7 +36,7 @@ static void show_gdt()
     struct gdtptr_t gdt;
     sgdt(&gdt);
     // 24 0x80000~
-    printk("gdt.limit: %d, gdt.addr: %d\n", gdt.limit, gdt.addr);
+    printk("gdt.limit: %d, gdt.addr: 0x%X\n", gdt.limit, gdt.addr);
 }
 
 static void init()

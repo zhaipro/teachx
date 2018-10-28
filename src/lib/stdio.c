@@ -4,12 +4,17 @@
 #include "stdio.h"
 #include "vga.h"
 
-static char *itoa(int value, char *string)
+static char *itoa(int value, char *string, int radix)
 {
-    const int radix = 10;
     char *first = string;
+    int temp;
     do{
-        *string = value % radix + '0';
+        temp = value % radix;
+        if (temp < 10) {
+            *string = temp + '0';
+        } else {
+            *string = temp - 10 + 'A';
+        }
         value /= radix;
         string++;
     }while(value);
@@ -44,7 +49,11 @@ int vsprintf(char *buf, const char *fmt, va_list args)
             str++;
             break;
         case 'd':
-            itoa(*args, str);
+            itoa(*args, str, 10);
+            str += strlen(str);
+            break;
+        case 'X':
+            itoa(*args, str, 16);
             str += strlen(str);
         default:
             break;

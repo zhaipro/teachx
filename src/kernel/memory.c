@@ -40,7 +40,7 @@ static void init_pdt()
     uint32_t pd = get_free_page();
     // 页表(page table)
     uint32_t pt0 = get_free_page();
-    printk("pd: %d, pt0: %d\n", pd, pt0);
+    printk("pd: %dk, pt0: %dk\n", pd / _1K, pt0 / _1K);
     // 先清空
     memset((void*)pd, 0, 2 * sizeof(uint32_t) * 1024);
     // 前 4M 的映射
