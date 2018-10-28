@@ -19,6 +19,7 @@ global _sti
 global _seflags
 global _iret
 global _lxs
+global _ltr
 
 [SECTION .text]
 [BITS 32]
@@ -103,4 +104,9 @@ _lxs:
     mov es, ax
     mov fs, ax
     mov gs, ax
+    ret
+
+; ltr(uin32_t selector);
+_ltr:
+    ltr [esp + 4]
     ret

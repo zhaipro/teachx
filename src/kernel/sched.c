@@ -67,11 +67,34 @@ static void shell_process()
     while(1);
 }
 
+// 只使用 ss0 和 esp0
+static struct {
+    uint32_t back_link; // 16 high bits zero
+    uint32_t esp0;      // stack pointer to use during interrupt
+    uint32_t ss0;       // 16 high bits zero. segment
+}s_tss;
+
+static void init_tss()
+{
+    struct gdtptr_t gdt;
+    sgdt(&gdt);
+    // 存储段描述符类型值说明
+    #define DA_386TSS 0x8900  // 可用 386 任务状态段类型值
+    #define SELECTOR_TSS 5
+    set_desc(&(gdt.addr[SELECTOR_TSS]), &s_tss, sizeof(s_tss), DA_386TSS);
+
+    s_tss.back_link = 0;
+    s_tss.ss0 = 16; // selector kernel ds
+    s_tss.esp0 = TOP_STACK;
+    ltr(SELECTOR_TSS * 8);
+}
+
 void init_sched()
 {
     init_timer();
     init_desc();
     create_process(shell_process);
+    init_tss();
 }
 
 void run()

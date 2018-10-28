@@ -58,9 +58,10 @@ gdt:
 
     dw 0, 0, 0, 0   ; 内核进程代码段，由内核对其进行初始化
     dw 0, 0, 0, 0   ; 内核进程数据段
+    dw 0, 0, 0, 0   ; tss
 
 gdt_48:
-    dw 5 * 8            ; gdt limit=40, 5 GDT entries
+    dw 6 * 8            ; gdt limit=48, 6 GDT entries
     dd PhyOfOS + gdt    ; gdt base
     ; PhyOfOS + gdt is the real gdt
 
