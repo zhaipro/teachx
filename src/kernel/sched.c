@@ -55,13 +55,15 @@ static void create_process(void (*start)())
     s_proc.eip = (uint32_t)start;
     s_proc.cs = 3 * 8 + 1;
     s_proc.eflags = seflags();
+    // 让内核进程也可以调用 I/O
+    s_proc.eflags |= 0x1000;
     s_proc.esp = 0x08000;
     s_proc.ss = 4 * 8 + 1;
 }
 
 static void shell_process()
 {
-    _vga_write(12 * 80 * 2, "Shell process ...\n");
+    printk("Shell process ...\n");
     while(1);
 }
 
