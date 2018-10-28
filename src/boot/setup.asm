@@ -41,6 +41,8 @@ jmp dword sel_cs0:(PhyOfOS + 512)
 
 %include "utils.asm"
 
+ALIGN 8
+
 gdt:
     dw 0, 0, 0, 0   ; dummy
 
@@ -55,7 +57,7 @@ gdt:
     dw 0x00CF       ; granularity=4096, 386
 
 gdt_48:
-    dw 0x800            ; gdt limit=2048, 256 GDT entries
+    dw 3 * 8            ; gdt limit=24, 3 GDT entries
     dd PhyOfOS + gdt    ; gdt base
     ; PhyOfOS + gdt is the real gdt
 

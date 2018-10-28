@@ -12,6 +12,7 @@ global _scr0
 global _lcr0
 global _jmp
 global _lidt
+global _sgdt
 global _scr2
 global _nop
 global _sti
@@ -63,6 +64,11 @@ _jmp:
 _lidt:
     mov eax, [esp + 4]
     lidt [eax]
+    ret
+
+_sgdt:
+    mov eax, [esp + 4]
+    sgdt [eax]
     ret
 
 ; uint32_t scr2();

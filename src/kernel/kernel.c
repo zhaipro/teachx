@@ -31,6 +31,14 @@ static void init_idt()
     lidt(&idtptr);
 }
 
+static void show_gdt()
+{
+    struct gdtptr_t gdt;
+    sgdt(&gdt);
+    // 24 0x80000~
+    printk("gdt.limit: %d, gdt.addr: %d\n", gdt.limit, gdt.addr);
+}
+
 static void init()
 {
     extern void init_8259A();
@@ -42,6 +50,7 @@ static void init()
 
 static void initial_process()
 {
+    show_gdt();
     // 开启中断
     sti();
     while(1)

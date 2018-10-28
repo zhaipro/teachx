@@ -14,6 +14,7 @@ struct idtptr_t{
     void *addr;     // 基址
 };
 #pragma pack ()
+#define gdtptr_t idtptr_t
 #define assert_sizeof(type, bytes) \
     static_assert(sizeof(type) == bytes, "sizeof error")
 assert_sizeof(struct idtptr_t, 6);
