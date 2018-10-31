@@ -9,7 +9,7 @@ __attribute__((interrupt)) static void timer_int(void *_)
 {
     static int s_time = 0;
     s_time ++;
-    if (s_time % 10000 == 0)
+    if (s_time % 1000 == 0)
         printk("Hello timer!\n");
     eoi_m();
 }
@@ -57,6 +57,8 @@ static void create_process(void (*start)())
     s_proc.eflags = seflags();
     // 让内核进程也可以调用 I/O
     s_proc.eflags |= 0x1000;
+    // 开启中断
+    s_proc.eflags |= 0x200;
     s_proc.esp = 0x08000;
     s_proc.ss = 4 * 8 + 1;
 }
