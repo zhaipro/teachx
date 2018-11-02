@@ -10,7 +10,7 @@ __attribute__((interrupt)) static void timer_int(void *_)
     static int s_time = 0;
     s_time ++;
     if (s_time % 1000 == 0)
-        printk("Hello timer!\n");
+        printk("Hello timer! %d\n", s_time);
     eoi_m();
 }
 

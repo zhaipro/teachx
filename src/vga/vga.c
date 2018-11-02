@@ -1,4 +1,6 @@
 
+#include <string.h>
+
 #include "asm.h"
 #include "vga.h"
 
@@ -32,6 +34,12 @@ int _vga_write(int addr, const char* str)
             LINE[addr] = *str;
             LINE[addr + 1] = COLOR;
             addr += 2;
+        }
+        // vga 只可显示 25 行
+        if (addr >= 25 * 80 * 2) {
+            // 向上挪一行
+            memcpy(LINE, LINE + 80 * 2, 25 * 80 * 2);
+            addr -= 80 * 2;
         }
     }
     return addr;
