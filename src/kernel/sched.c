@@ -5,12 +5,17 @@
 #include "stdio.h"
 #include "vga.h"
 
-__attribute__((interrupt)) static void timer_int(void *_)
+static interrupt_frame s_proc;
+
+__attribute__((interrupt)) static void timer_int(interrupt_frame *frame)
 {
     static int s_time = 0;
     s_time ++;
-    if (s_time % 1000 == 0)
-        printk("Hello timer! %d\n", s_time);
+    if (s_time % 1000 == 0) {
+        printk("%d %d 0x%X\n", frame->eip, frame->cs, frame->eflags);
+        // 让当前进程回到起点，测试用
+        *frame = s_proc;
+    }
     eoi_m();
 }
 
@@ -46,8 +51,6 @@ static void init_desc()
     set_desc(&(gdt.addr[3]), 0, 0xfffff, DA_C | DA_32 | DA_LIMIT_4K | DA_DPL1);
     set_desc(&(gdt.addr[4]), 0, 0xfffff, DA_DRW | DA_32 | DA_LIMIT_4K | DA_DPL1);
 }
-
-static interrupt_frame s_proc;
 
 static void create_process(void (*start)())
 {
