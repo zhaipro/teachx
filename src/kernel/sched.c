@@ -19,7 +19,9 @@ __attribute__((interrupt)) static void timer_int(interrupt_frame *frame)
     static int s_time = 0;
     s_time ++;
     if (s_time % 1000 == 0) {
-        // 切换到下一个进程的起点，测试用
+        // 在切换进程之前，保存当前进程的进度
+        s_proc->frame = *frame;
+        // 切换到下一个进程，测试用
         s_proc = s_proc->prev;
         *frame = s_proc->frame;
     }
