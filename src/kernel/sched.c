@@ -5,16 +5,23 @@
 #include "stdio.h"
 #include "vga.h"
 
-static interrupt_frame s_proc;
+
+struct process_t {
+    interrupt_frame frame;  // 硬件层域
+    struct process_t *prev;
+};
+
+static struct process_t s_procs[2];
+static struct process_t *s_proc = s_procs;
 
 __attribute__((interrupt)) static void timer_int(interrupt_frame *frame)
 {
     static int s_time = 0;
     s_time ++;
     if (s_time % 1000 == 0) {
-        printk("%d %d 0x%X\n", frame->eip, frame->cs, frame->eflags);
-        // 让当前进程回到起点，测试用
-        *frame = s_proc;
+        // 切换到下一个进程的起点，测试用
+        s_proc = s_proc->prev;
+        *frame = s_proc->frame;
     }
     eoi_m();
 }
@@ -54,21 +61,33 @@ static void init_desc()
 
 static void create_process(void (*start)())
 {
+    static int s_idx = 0;
     // 初始化寄存器数据
-    s_proc.eip = (uint32_t)start;
-    s_proc.cs = 3 * 8 + 1;
-    s_proc.eflags = seflags();
+    s_procs[s_idx].frame.eip = (uint32_t)start;
+    s_procs[s_idx].frame.cs = 3 * 8 + 1;
+    s_procs[s_idx].frame.eflags = seflags();
     // 让内核进程也可以调用 I/O
-    s_proc.eflags |= 0x1000;
+    s_procs[s_idx].frame.eflags |= 0x1000;
     // 开启中断
-    s_proc.eflags |= 0x200;
-    s_proc.esp = 0x08000;
-    s_proc.ss = 4 * 8 + 1;
+    s_procs[s_idx].frame.eflags |= 0x200;
+    s_procs[s_idx].frame.esp = 0x08000;
+    s_procs[s_idx].frame.ss = 4 * 8 + 1;
+
+    s_procs[s_idx].prev = s_procs;
+    s_procs[s_idx].prev = s_procs[0].prev;
+    s_procs[0].prev = &s_procs[s_idx];
+    s_idx++;
 }
 
 static void shell_process()
 {
     printk("Shell process ...\n");
+    while(1);
+}
+
+static void temp_process()
+{
+    printk("Temp process ...\n");
     while(1);
 }
 
@@ -99,11 +118,12 @@ void init_sched()
     init_timer();
     init_desc();
     create_process(shell_process);
+    create_process(temp_process);
     init_tss();
 }
 
 void run()
 {
     lxs(4 * 8 + 1);
-    iret(&s_proc);
+    iret(s_proc);
 }
