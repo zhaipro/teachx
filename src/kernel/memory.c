@@ -53,8 +53,6 @@ static void init_pdt()
     }
     // 页目录也是页表
     ((uint32_t*)pd)[PDT / _4M] = pd | PAGE_PRESENT;
-    // 系统段的前 4M 与 [0, 4M) 相同
-    ((uint32_t*)pd)[KERNEL_SEGMENT / _4M] = pt0 | PAGE_PRESENT;
     // 设置页目录的物理地址
     lcr3(pd);
 }
