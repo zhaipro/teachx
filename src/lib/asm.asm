@@ -8,6 +8,7 @@ global _in
 global _out
 global _hlt
 global _lcr3
+global _scr3
 global _scr0
 global _lcr0
 global _jmp
@@ -49,6 +50,10 @@ _hlt:
 _lcr3:
     mov eax, [esp + 4]
     mov cr3, eax
+    ret
+
+_scr3:
+    mov eax, cr3
     ret
 
 _scr0:

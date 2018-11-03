@@ -2,29 +2,36 @@
 #include "asm.h"
 #include "i8259.h"
 #include "kernel.h"
+#include "memory.h"
 #include "stdio.h"
 #include "vga.h"
 
 
 struct process_t {
     interrupt_frame frame;  // 硬件层域
+    uint32_t cr3;
     struct process_t *prev;
 };
 
 static struct process_t s_procs[2];
 static struct process_t *s_proc = s_procs;
 
+static void switch_to(struct process_t *next, interrupt_frame *frame)
+{
+    // 在切换进程之前，保存当前进程的进度
+    s_proc->frame = *frame;
+    // 切换到下一个进程
+    s_proc = next;
+    *frame = next->frame;
+    lcr3(next->cr3);
+}
+
 __attribute__((interrupt)) static void timer_int(interrupt_frame *frame)
 {
     static int s_time = 0;
     s_time ++;
-    if (s_time % 1000 == 0) {
-        // 在切换进程之前，保存当前进程的进度
-        s_proc->frame = *frame;
-        // 切换到下一个进程，测试用
-        s_proc = s_proc->prev;
-        *frame = s_proc->frame;
-    }
+    if (s_time % 1000 == 0)
+        switch_to(s_proc->prev, frame);
     eoi_m();
 }
 
@@ -72,8 +79,14 @@ static void create_process(void (*start)())
     s_procs[s_idx].frame.eflags |= 0x1000;
     // 开启中断
     s_procs[s_idx].frame.eflags |= 0x200;
-    s_procs[s_idx].frame.esp = 0x08000;
+    s_procs[s_idx].frame.esp = 2 * _4M;
     s_procs[s_idx].frame.ss = 4 * 8 + 1;
+
+    if (s_idx == 0) {
+        s_procs[s_idx].cr3 = scr3();
+    } else {
+        s_procs[s_idx].cr3 = create_pd();
+    }
 
     s_procs[s_idx].prev = s_procs;
     s_procs[s_idx].prev = s_procs[0].prev;

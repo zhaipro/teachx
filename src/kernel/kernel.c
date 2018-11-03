@@ -16,7 +16,6 @@ void start()
     vga_set_cursor_pos(5 * 80);
     printk("Hello kernel!\n");
     init();
-    init_memory();
     initial_process();
 }
 
@@ -45,6 +44,8 @@ static void init()
     extern void init_sched();
     init_idt();
     init_8259A();
+    // 内存管理员的初始化在进程调度管理员之前
+    init_memory();
     init_sched();
 }
 

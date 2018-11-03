@@ -10,6 +10,26 @@
 
 static uint32_t s_total;
 
+static void* kmalloc()
+{
+    static uint32_t s_start = KERNEL_SEGMENT / _4K;
+    return (void*)((s_start++) * _4K);
+}
+
+#define get_pte(vaddr) (((uint32_t*)PDT) + ((uint32_t)(vaddr) >> 12))
+
+// 如果页表不存在就会产生异常。
+#define get_paddr(vaddr) ((*get_pte(vaddr)) & 0xfffff000)
+
+uint32_t create_pd()
+{
+    uint32_t *new_pd = kmalloc();
+    memset(new_pd, 0, _4K);
+    new_pd[0] = ((uint32_t*)PDT)[PDT / _4K];
+    new_pd[PDT / _4M] = get_paddr(new_pd) | PAGE_PRESENT;
+    return get_paddr(new_pd);
+}
+
 // 获取内存总量，单位：K
 static uint32_t get_total_memory()
 {
@@ -64,8 +84,5 @@ void init_memory()
     init_pdt();
     // 加载页故障修理工
     set_trap_gate(INT_VECTOR_PAGE_FAULT, page_fault);
-    // 测试内存管理员是否能发现我需要，但却不存在的内存
-    ((int*)_4M)[0] = 0;
-    // 并让修理工为我分配
     printk("Init memory ok!\n");
 }
