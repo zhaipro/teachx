@@ -97,14 +97,16 @@ static void create_process(void (*start)())
 static void shell_process()
 {
     printk("Shell process ...\n");
-    system_call();
+    // 测试用，发送一下当前日期
+    system_call(2018, 11, 4);
     while(1);
 }
 
 static void temp_process()
 {
     printk("Temp process ...\n");
-    system_call();
+    // 测试用，发送一个与之前不同的日期
+    system_call(2020, 4, 1);
     while(1);
 }
 
