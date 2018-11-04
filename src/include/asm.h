@@ -26,6 +26,7 @@ uint32_t seflags();
 void iret(void *esp);
 void lxs(uint32_t xs);
 void ltr(uint32_t selector);
+void system_call();
 
 // 延迟输出
 #define out_p(port, value) do{  \

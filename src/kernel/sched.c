@@ -97,12 +97,14 @@ static void create_process(void (*start)())
 static void shell_process()
 {
     printk("Shell process ...\n");
+    system_call();
     while(1);
 }
 
 static void temp_process()
 {
     printk("Temp process ...\n");
+    system_call();
     while(1);
 }
 

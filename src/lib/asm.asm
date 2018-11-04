@@ -21,6 +21,7 @@ global _seflags
 global _iret
 global _lxs
 global _ltr
+global _system_call
 
 [SECTION .text]
 [BITS 32]
@@ -114,4 +115,8 @@ _lxs:
 ; ltr(uin32_t selector);
 _ltr:
     ltr [esp + 4]
+    ret
+
+_system_call:
+    int 0x80
     ret
