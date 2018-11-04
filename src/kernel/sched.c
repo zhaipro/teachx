@@ -1,6 +1,7 @@
 
 #include "asm.h"
 #include "i8259.h"
+#include "ipc.h"
 #include "kernel.h"
 #include "memory.h"
 #include "stdio.h"
@@ -98,15 +99,17 @@ static void shell_process()
 {
     printk("Shell process ...\n");
     // 测试用，发送一下当前日期
-    system_call(2018, 11, 4);
+    struct msg_t msg;
+    msg.p0 = 2018;
+    msg.p1 = 11;
+    msg.p2 = 4;
+    system_call(0, 0, (uint32_t)&msg);
     while(1);
 }
 
 static void temp_process()
 {
     printk("Temp process ...\n");
-    // 测试用，发送一个与之前不同的日期
-    system_call(2020, 4, 1);
     while(1);
 }
 
