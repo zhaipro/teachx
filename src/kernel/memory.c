@@ -10,7 +10,7 @@
 
 static uint32_t s_total;
 
-static void* kmalloc()
+void* kmalloc()
 {
     static uint32_t s_start = KERNEL_SEGMENT / _4K;
     return (void*)((s_start++) * _4K);

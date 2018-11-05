@@ -4,5 +4,6 @@
 
 void init_memory();
 uint32_t create_pd();
+void* kmalloc();
 
 #endif
