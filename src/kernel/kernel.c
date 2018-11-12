@@ -19,17 +19,6 @@ void start()
     initial_process();
 }
 
-static void init_idt()
-{
-    // IDT —— interrupt description table
-    // 加载中断向量表
-    memset((void*)IDT, 0, 256 * 8);
-    struct idtptr_t idtptr;
-    idtptr.limit = 256 * 8;
-    idtptr.addr = (void*)IDT;
-    lidt(&idtptr);
-}
-
 static void show_gdt()
 {
     struct gdtptr_t gdt;
@@ -40,9 +29,11 @@ static void show_gdt()
 
 static void init()
 {
+    extern void init_traps();
     extern void init_8259A();
     extern void init_sched();
-    init_idt();
+    // 陷阱的初始化需要排在前面
+    init_traps();
     init_8259A();
     // 内存管理员的初始化在进程调度管理员之前
     init_memory();
