@@ -44,6 +44,4 @@ void init_traps()
     idtptr.addr = (void*)IDT;
     lidt(&idtptr);
     printk("Init traps ok!\n");
-    static int a = 0;
-    a = 1 / a;
 }

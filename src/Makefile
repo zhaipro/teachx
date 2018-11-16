@@ -22,8 +22,8 @@ boot/boot.bin: FORCE
 OBJS = kernel/all.o lib/all.o vga/vga.o
 
 kernel.bin: $(OBJS)
-	$(LD) -o kernel.o -Ttext 0x080600 --section-alignment 4 $^
-	objcopy -O binary -R .note -R .comment kernel.o $@
+	$(LD) -T linker.ld -o kernel.o -Ttext 0x080600 $^
+	objcopy -O binary -j .text -j .data -j .rdata kernel.o $@
 
 kernel/all.o: FORCE
 	cd kernel && $(MAKE)

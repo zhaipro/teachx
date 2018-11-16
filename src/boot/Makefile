@@ -13,9 +13,8 @@ setup.asm.bin: setup.asm utils.asm include/load.inc
 
 setup.c.bin: setup.o ../vga/vga.o ../lib/asm.o
 	$(LD) $(LDFLAGS) -o setup.all.o $^
-	#                                   越小越好, 还有其它方法吗?
-	$(LD) -o setup.tmp.o -Ttext 0x80200 --section-alignment 1 setup.all.o
-	objcopy -O binary -R .note -R .comment setup.tmp.o $@
+	$(LD) -T ../linker.ld -o setup.tmp.o -Ttext 0x80200 setup.all.o
+	objcopy -O binary -j .text -j .data -j .rdata setup.tmp.o $@
 
 ../vga/vga.o: FORCE
 	cd ../vga && $(MAKE)
