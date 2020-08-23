@@ -1,5 +1,5 @@
 
-all.o: kernel.o memory.o i8259.o sched.o ipc.o
+all.o: kernel.o memory.o i8259.o sched.o ipc.o shell.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
 include Makefile.d

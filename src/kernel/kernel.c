@@ -43,11 +43,12 @@ static void init()
     extern void init_8259A();
     extern void init_sched();
     extern void init_ipc();
+    extern void shell_process();
     init_idt();
     init_8259A();
     // 内存管理员的初始化在进程调度管理员之前
     init_memory();
-    init_sched();
+    init_sched(shell_process);
     init_ipc();
 }
 

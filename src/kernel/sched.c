@@ -135,12 +135,11 @@ static void init_tss()
     ltr(SELECTOR_TSS * 8);
 }
 
-void init_sched()
+void init_sched(void (*start)())
 {
     init_timer();
     init_desc();
-    create_process(shell_process);
-    create_process(temp_process);
+    create_process(start);
     init_tss();
 }
 
