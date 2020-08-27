@@ -5,6 +5,7 @@
 
 1. nasm
 1. Bochs
+1. gcc src/obj2bin.cpp -o src/obj2bin
 
 ## make
 

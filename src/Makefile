@@ -3,8 +3,9 @@ export ASM = nasm
 #                       获取绝对路径
 export C_INCLUDE_PATH = $(shell readlink -f ./include)
 export CC = gcc
-export LDFLAGS = -r -i
-export CFLAGS = -O -mgeneral-regs-only
+export LDFLAGS = -r -i -m i386pe
+export CFLAGS = -O -mgeneral-regs-only -m32
+export OBJ2BIN = $(shell readlink -f obj2bin)
 
 all: teachx.img
 
@@ -22,8 +23,8 @@ boot/boot.bin: FORCE
 OBJS = kernel/all.o lib/all.o vga/vga.o
 
 kernel.bin: $(OBJS)
-	$(LD) -o kernel.o -Ttext 0x080600 --section-alignment 4 $^
-	objcopy -O binary -R .note -R .comment kernel.o $@
+	$(LD) $(LDFLAGS) -o kernel.o $^
+	$(OBJ2BIN) kernel.o $@ 0x080600
 
 kernel/all.o: FORCE
 	cd kernel && $(MAKE)
