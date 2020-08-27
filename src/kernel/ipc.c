@@ -15,10 +15,10 @@ struct _msg_t{
 static struct _msg_t *s_free_msgs;
 
 struct regparm_t {
-    uint32_t eax;
-    uint32_t edx;
-    uint32_t ecx;
-    uint32_t ebp;
+    int32_t eax;
+    int32_t edx;
+    int32_t ecx;
+    int32_t ebp;
 };
 
 static struct _msg_t* alloc_msg_block()
@@ -35,7 +35,7 @@ static void ipc(void *frame)
     struct regparm_t *param = ((struct regparm_t*)frame) - 1;
     struct _msg_t *_msg = alloc_msg_block();
     _msg->msg = *((struct msg_t*)param->ecx);
-    printk("msg.ps: %d/%d/%d\n", _msg->msg.p0, _msg->msg.p1, _msg->msg.p2);
+    printk("eax: %d, msg.ps: %d/%d/%d\n", param->eax, _msg->msg.p0, _msg->msg.p1, _msg->msg.p2);
 }
 
 void init_ipc()

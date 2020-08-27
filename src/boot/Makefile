@@ -24,7 +24,7 @@ setup.c.bin: setup.o ../vga/vga.o ../lib/asm.o
 include Makefile.d
 
 Makefile.d: *.c
-	$(CC) -M *.c > Makefile.d
+	$(CC) -MM *.c > Makefile.d
 
 FORCE:
 

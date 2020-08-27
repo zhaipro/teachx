@@ -6,7 +6,7 @@ all: $(OBJS)
 include Makefile.d
 
 Makefile.d: *.c
-	$(CC) -M *.c > Makefile.d
+	$(CC) -MM *.c > Makefile.d
 
 clean:
 	rm -f *.o *.d

@@ -1,4 +1,5 @@
 
+#include <stddef.h>
 #include "asm.h"
 #include "i8259.h"
 #include "ipc.h"
@@ -10,19 +11,19 @@
 
 struct process_t {
     interrupt_frame frame;  // 硬件层域
-    uint32_t cr3;
-    struct process_t *prev;
+    uint32_t cr3;           // 虚拟内存
+    struct process_t *next;
 };
 
-static struct process_t s_procs[2];
-static struct process_t *s_proc = s_procs;
+static struct process_t *s_free_procs = NULL;   // 空闲的存储列表
+static struct process_t *s_cur_proc = NULL;     // 当前正在执行的
 
 static void switch_to(struct process_t *next, interrupt_frame *frame)
 {
     // 在切换进程之前，保存当前进程的进度
-    s_proc->frame = *frame;
+    s_cur_proc->frame = *frame;
     // 切换到下一个进程
-    s_proc = next;
+    s_cur_proc = next;
     *frame = next->frame;
     lcr3(next->cr3);
 }
@@ -32,7 +33,7 @@ __attribute__((interrupt)) static void timer_int(interrupt_frame *frame)
     static int s_time = 0;
     s_time ++;
     if (s_time % 1000 == 0)
-        switch_to(s_proc->prev, frame);
+        switch_to(s_cur_proc->next, frame);
     eoi_m();
 }
 
@@ -69,42 +70,30 @@ static void init_desc()
     set_desc(&(gdt.addr[4]), 0, 0xfffff, DA_DRW | DA_32 | DA_LIMIT_4K | DA_DPL1);
 }
 
-static void create_process(void (*start)())
+static void init_process(void (*start)())
 {
-    static int s_idx = 0;
-    // 初始化寄存器数据
-    s_procs[s_idx].frame.eip = (uint32_t)start;
-    s_procs[s_idx].frame.cs = 3 * 8 + 1;
-    s_procs[s_idx].frame.eflags = seflags();
-    // 让内核进程也可以调用 I/O
-    s_procs[s_idx].frame.eflags |= 0x1000;
-    // 开启中断
-    s_procs[s_idx].frame.eflags |= 0x200;
-    s_procs[s_idx].frame.esp = 2 * _4M;
-    s_procs[s_idx].frame.ss = 4 * 8 + 1;
-
-    if (s_idx == 0) {
-        s_procs[s_idx].cr3 = scr3();
-    } else {
-        s_procs[s_idx].cr3 = create_pd();
+    int i;
+    s_free_procs = kmalloc();
+    for(i = 1; i < _4K / sizeof(struct process_t); i++) {
+        s_free_procs[i - 1].next = &s_free_procs[i];
     }
+    s_free_procs[i - 1].next = NULL;
+    s_cur_proc = s_free_procs;
+    s_free_procs = s_free_procs->next;
+    s_cur_proc->next = s_cur_proc;
 
-    s_procs[s_idx].prev = s_procs;
-    s_procs[s_idx].prev = s_procs[0].prev;
-    s_procs[0].prev = &s_procs[s_idx];
-    s_idx++;
-}
+    // 初始化寄存器数据
+    s_cur_proc->frame.eip = (uint32_t)start;
+    s_cur_proc->frame.cs = 3 * 8 + 1;
+    s_cur_proc->frame.eflags = seflags();
+    // 让内核进程也可以调用 I/O
+    s_cur_proc->frame.eflags |= 0x1000;
+    // 开启中断
+    s_cur_proc->frame.eflags |= 0x200;
+    s_cur_proc->frame.esp = 2 * _4M;
+    s_cur_proc->frame.ss = 4 * 8 + 1;
 
-static void shell_process()
-{
-    printk("Shell process ...\n");
-    // 测试用，发送一下当前日期
-    struct msg_t msg;
-    msg.p0 = 2018;
-    msg.p1 = 11;
-    msg.p2 = 4;
-    system_call(0, 0, (uint32_t)&msg);
-    while(1);
+    s_cur_proc->cr3 = scr3();
 }
 
 static void temp_process()
@@ -139,12 +128,12 @@ void init_sched(void (*start)())
 {
     init_timer();
     init_desc();
-    create_process(start);
+    init_process(start);
     init_tss();
 }
 
 void run()
 {
     lxs(4 * 8 + 1);
-    iret(s_proc);
+    iret(s_cur_proc);
 }
