@@ -5,7 +5,7 @@ all.o: asm.o stdio.o bios.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
 asm.o: asm.asm
-	$(ASM) $(ASMFLAGS) -o asm.o asm.asm
+	$(ASM) $(ASMFLAGS) -o $@ $^
 
 include Makefile.d
 

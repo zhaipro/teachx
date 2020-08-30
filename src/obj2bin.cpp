@@ -54,10 +54,12 @@ int main(int argc, const char *args[])
         for(int j=0; j<sections[i].NumberOfRelocations; j++)
         {
             fread(&relocation, sizeof(relocation), 1, ifp);
+            const IMAGE_SYMBOL *symbol = &symbols[relocation.SymbolTableIndex];
+            assert(symbol->SectionNumber && "SectionNumber == 0?");
             if(relocation.Type == 0x14) {   // 函数调用
-                *(long*)(&buf[relocation.VirtualAddress]) = symbols[relocation.SymbolTableIndex].Value - relocation.VirtualAddress - 4;
+                *(long*)(&buf[relocation.VirtualAddress]) = symbol->Value - relocation.VirtualAddress - 4;
             } else if(relocation.Type == 6) {
-                *(long*)(&buf[relocation.VirtualAddress]) += ttext + symbols[relocation.SymbolTableIndex].Value;
+                *(long*)(&buf[relocation.VirtualAddress]) += ttext + symbol->Value;
             } else {
                 assert(!"unknown type");
             }

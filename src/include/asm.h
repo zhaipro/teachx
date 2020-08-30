@@ -27,7 +27,7 @@ void iret(void *esp);
 void lxs(uint32_t xs);
 void ltr(uint32_t selector);
 __attribute__((regparm(3)))
-void system_call(uint32_t eax, uint32_t edx, uint32_t ecx);
+int system_call(uint32_t eax, uint32_t edx, uint32_t ecx);
 
 // 延迟输出
 #define out_p(port, value) do{  \

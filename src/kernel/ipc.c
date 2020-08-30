@@ -14,13 +14,6 @@ struct _msg_t{
 
 static struct _msg_t *s_free_msgs;
 
-struct regparm_t {
-    int32_t eax;
-    int32_t edx;
-    int32_t ecx;
-    int32_t ebp;
-};
-
 static struct _msg_t* alloc_msg_block()
 {
     struct _msg_t *new_block = s_free_msgs;
@@ -29,13 +22,13 @@ static struct _msg_t* alloc_msg_block()
 }
 
 // Inter-Process Communication
-__attribute__((interrupt))
-static void ipc(void *frame)
+__attribute__((regparm(3)))
+int32_t do_ipc(int32_t eax, int32_t edx, int32_t ecx)
 {
-    struct regparm_t *param = ((struct regparm_t*)frame) - 1;
     struct _msg_t *_msg = alloc_msg_block();
-    _msg->msg = *((struct msg_t*)param->ecx);
-    printk("eax: %d, msg.ps: %d/%d/%d\n", param->eax, _msg->msg.p0, _msg->msg.p1, _msg->msg.p2);
+    _msg->msg = *((struct msg_t*)ecx);
+    printk("eax: %d, msg.ps: %d/%d/%d\n", eax, _msg->msg.p0, _msg->msg.p1, _msg->msg.p2);
+    return _msg->msg.p0;
 }
 
 void init_ipc()
@@ -48,6 +41,7 @@ void init_ipc()
     }
     s_free_msgs[i].next = NULL;
 
+    extern void ipc();
     set_user_gate(0x80, ipc);
     printk("Hello ipc!\n");
     printk("Max count of message: %d\n", _4K / sizeof(struct _msg_t));
