@@ -5,8 +5,10 @@
 #include <assert.h>
 #include <stdint.h>
 
+// 硬件解释
 #define PAGE_PRESENT    0X01    // 存在标志
 #define PAGE_WRITE      0X03    // 可写标志
+#define PAGE_USER       0X04    // 用户区
 
 struct descriptor_t{
     uint32_t d0;

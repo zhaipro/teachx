@@ -16,6 +16,7 @@ struct process_t {
     struct process_t *next;
 };
 
+static struct process_t *s_procs = NULL;
 static struct process_t *s_free_procs = NULL;   // 空闲的存储列表
 static struct process_t *s_cur_proc = NULL;     // 当前正在执行的
 
@@ -68,18 +69,20 @@ static void init_desc()
     #define DA_32           0x400000    // 32 位段
     #define DA_LIMIT_4K     0x800000    // 段界限粒度为 4K 字节
     #define DA_DPL1         0x2000
+    #define DA_DPL3         0x6000
     // 存储段描述符类型值说明
     #define DA_DRW          0x9200      // 存在的可读写数据段属性值
     #define DA_C            0x9800      // 存在的只执行代码段属性值
     // 内核进程段
-    set_desc(&(gdt.addr[3]), 0, 0xfffff, DA_C | DA_32 | DA_LIMIT_4K | DA_DPL1);
-    set_desc(&(gdt.addr[4]), 0, 0xfffff, DA_DRW | DA_32 | DA_LIMIT_4K | DA_DPL1);
+    set_desc(&(gdt.addr[3]), 0, 0xfffff, DA_C | DA_32 | DA_LIMIT_4K | DA_DPL3);
+    set_desc(&(gdt.addr[4]), 0, 0xfffff, DA_DRW | DA_32 | DA_LIMIT_4K | DA_DPL3);
 }
 
 static void init_process(void (*start)())
 {
     int i;
-    s_free_procs = kmalloc();
+    s_procs = kmalloc();
+    s_free_procs = s_procs;
     for(i = 1; i < _4K / sizeof(struct process_t); i++) {
         s_free_procs[i - 1].next = &s_free_procs[i];
     }
@@ -90,19 +93,19 @@ static void init_process(void (*start)())
 
     // 初始化寄存器数据
     s_cur_proc->frame.eip = (uint32_t)start;
-    s_cur_proc->frame.cs = 3 * 8 + 1;
+    s_cur_proc->frame.cs = 3 * 8 + 3;
     s_cur_proc->frame.eflags = seflags();
     // 让内核进程也可以调用 I/O
-    s_cur_proc->frame.eflags |= 0x1000;
+    s_cur_proc->frame.eflags |= 0x3000;
     // 开启中断
     s_cur_proc->frame.eflags |= 0x200;
     s_cur_proc->frame.esp = 2 * _4M;
-    s_cur_proc->frame.ss = 4 * 8 + 1;
+    s_cur_proc->frame.ss = 4 * 8 + 3;
 
     s_cur_proc->cr3 = scr3();
 }
 
-void do_fork()
+uint32_t do_fork()
 {
     struct process_t *new_proc = s_free_procs;
     s_free_procs = s_free_procs->next;
@@ -112,12 +115,10 @@ void do_fork()
 
     new_proc->frame = *(interrupt_frame*)(TOP_STACK - sizeof(interrupt_frame));
     new_proc->pushad = *(struct pushad_t*)(TOP_STACK - sizeof(interrupt_frame) - sizeof(struct pushad_t));
+
     new_proc->pushad.eax = 0;   // 新进程的返回值为0
-    // 很无奈，我们下次fork内存
-    new_proc->cr3 = s_cur_proc->cr3;
-    memcpy(2 * _4M - 2 * _4K, 2 * _4M - _4K, _4K);
-    new_proc->pushad.ebp -= _4K;
-    new_proc->frame.esp -= _4K;
+    new_proc->cr3 = do_memory_fork();
+    return new_proc - s_procs;
 }
 
 // 只使用 ss0 和 esp0
@@ -152,6 +153,6 @@ void init_sched(void (*start)())
 
 void run()
 {
-    lxs(4 * 8 + 1);
+    lxs(4 * 8 + 3);
     iret(&s_cur_proc->frame);
 }

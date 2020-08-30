@@ -8,14 +8,14 @@ static char *itoa(int value, char *string, int radix)
 {
     char *first = string;
     int temp;
-    if(value < 0) {
+    if(value < 0 && radix == 10) {
         *string = '-';
         string ++;
         first ++;
         value = -value;
     }
     do{
-        temp = value % radix;
+        temp = (unsigned int)value % radix;
         if (temp < 10) {
             *string = temp + '0';
         } else {

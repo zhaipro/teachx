@@ -51,7 +51,48 @@ __attribute__((interrupt)) static void page_fault(void *_, uint32_t error_code)
 {
     uint32_t cr2 = scr2();
     printk("page fault, error: %d, addr: %d K\n", error_code, cr2 / _1K);
-    ((uint32_t*)PDT)[cr2 / _4K] = get_free_page() | PAGE_PRESENT;
+    if(error_code) {
+        ((uint32_t*)PDT)[cr2 / _4K] = get_free_page() | PAGE_PRESENT | PAGE_USER | PAGE_WRITE;
+    } else {
+         ((uint32_t*)PDT)[cr2 / _4K] = get_free_page() | PAGE_PRESENT | PAGE_USER | PAGE_WRITE;
+    }
+}
+
+uint32_t do_memory_fork()
+{
+    uint32_t *new_pd = kmalloc();
+    uint32_t *new_pt = NULL;
+    void *new_page = NULL;
+    uint32_t *pd = &((uint32_t*)PDT)[PDT / _4K];
+    uint32_t *pt = NULL;
+    void *page = NULL;
+    int i, j;
+    memcpy(new_pd, pd, _4K);
+    // 页目录也是页表
+    new_pd[PDT / _4M] = get_paddr(new_pd) | PAGE_PRESENT | PAGE_USER | PAGE_WRITE;
+    for(i=_4M/_4M; i<PDT/_4M; i++)
+    {
+        if(pd[i] & PAGE_PRESENT) {
+            printk("pd: %dM\n", i * 4);
+            new_pt = kmalloc();
+            pt = &((uint32_t*)PDT)[i * 1024];
+            memcpy(new_pt, pt, _4K);
+            for(j=0; j<1024; j++)
+            {
+                if(pt[j] & PAGE_PRESENT) {
+                    printk("pt: %dK\n", i * 4 * 1024 + j * 4);
+                    new_page = kmalloc();
+                    page = (void*)(_4M * i + _4K * j);
+                    memcpy(new_page, page, _4K);
+                    new_pt[j] = get_paddr(new_page) | PAGE_PRESENT | PAGE_USER | PAGE_WRITE;
+                } else {
+                    new_pt[j] = 0;
+                }
+            }
+            new_pd[i] = get_paddr(new_pt) | PAGE_PRESENT | PAGE_USER | PAGE_WRITE;
+        }
+    }
+    return get_paddr(new_pd);
 }
 
 static void init_pdt()
@@ -64,15 +105,18 @@ static void init_pdt()
     // 先清空
     memset((void*)pd, 0, 2 * sizeof(uint32_t) * 1024);
     // 前 4M 的映射
-    ((uint32_t*)pd)[0] = pt0 | PAGE_PRESENT;
+    ((uint32_t*)pd)[0] = pt0 | PAGE_PRESENT | PAGE_USER | PAGE_WRITE;
     // [0, 4K) 不可用，用于声明空指针
     // [4K, 1M) 指向真实的地址，用于书写 vga
     // [1M, 4M) 不用
-    for (int i=1; i<_1M/_4K; i++) {
-        ((uint32_t*)pt0)[i] = (i * _4K) | PAGE_PRESENT;
+    for (int i=1; i<0xb8000/_4K; i++) {
+        ((uint32_t*)pt0)[i] = (i * _4K) | PAGE_PRESENT | PAGE_USER | PAGE_WRITE;
+    }
+    for (int i=0xb8000/_4K; i<_1M/_4K; i++) {
+        ((uint32_t*)pt0)[i] = (i * _4K) | PAGE_PRESENT | PAGE_USER | PAGE_WRITE;
     }
     // 页目录也是页表
-    ((uint32_t*)pd)[PDT / _4M] = pd | PAGE_PRESENT;
+    ((uint32_t*)pd)[PDT / _4M] = pd | PAGE_PRESENT | PAGE_USER | PAGE_WRITE;
     // 设置页目录的物理地址
     lcr3(pd);
 }

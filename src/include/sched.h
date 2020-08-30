@@ -2,6 +2,8 @@
 #ifndef _SCHED_H_
 #define _SCHED_H_
 
-void do_fork();
+#include <stddef.h>
+
+uint32_t do_fork();
 
 #endif
