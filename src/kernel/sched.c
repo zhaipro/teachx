@@ -10,6 +10,7 @@
 
 
 struct process_t {
+    struct pushad_t pushad;
     interrupt_frame frame;  // 硬件层域
     uint32_t cr3;           // 虚拟内存
     struct process_t *next;
@@ -18,22 +19,26 @@ struct process_t {
 static struct process_t *s_free_procs = NULL;   // 空闲的存储列表
 static struct process_t *s_cur_proc = NULL;     // 当前正在执行的
 
-static void switch_to(struct process_t *next, interrupt_frame *frame)
+static void switch_to(struct process_t *next)
 {
     // 在切换进程之前，保存当前进程的进度
-    s_cur_proc->frame = *frame;
+    void *p = (void*)TOP_STACK - sizeof(interrupt_frame);
+    s_cur_proc->frame = *(interrupt_frame*)p;
+    *(interrupt_frame*)p = next->frame;
+    p -= sizeof(struct pushad_t);
+    s_cur_proc->pushad = *(struct pushad_t*)p;
+    *(struct pushad_t*)p = next->pushad;
     // 切换到下一个进程
     s_cur_proc = next;
-    *frame = next->frame;
     lcr3(next->cr3);
 }
 
-__attribute__((interrupt)) static void timer_int(interrupt_frame *frame)
+void do_timer_int()
 {
     static int s_time = 0;
     s_time ++;
     if (s_time % 1000 == 0)
-        switch_to(s_cur_proc->next, frame);
+        switch_to(s_cur_proc->next);
     eoi_m();
 }
 
@@ -50,6 +55,7 @@ static void init_timer()
     out_p(PORT_CLOCK_0, LATCH & 0xff);
     out_p(PORT_CLOCK_0, LATCH >> 8);
 
+    extern void timer_int();
     set_8259a_idt(INT_TIMER, timer_int);
     i8259A_irq_real(INT_TIMER);
 }
@@ -96,10 +102,22 @@ static void init_process(void (*start)())
     s_cur_proc->cr3 = scr3();
 }
 
-static void temp_process()
+void do_fork()
 {
-    printk("Temp process ...\n");
-    while(1);
+    struct process_t *new_proc = s_free_procs;
+    s_free_procs = s_free_procs->next;
+
+    new_proc->next = s_cur_proc->next;
+    s_cur_proc->next = new_proc;
+
+    new_proc->frame = *(interrupt_frame*)(TOP_STACK - sizeof(interrupt_frame));
+    new_proc->pushad = *(struct pushad_t*)(TOP_STACK - sizeof(interrupt_frame) - sizeof(struct pushad_t));
+    new_proc->pushad.eax = 0;   // 新进程的返回值为0
+    // 很无奈，我们下次fork内存
+    new_proc->cr3 = s_cur_proc->cr3;
+    memcpy(2 * _4M - 2 * _4K, 2 * _4M - _4K, _4K);
+    new_proc->pushad.ebp -= _4K;
+    new_proc->frame.esp -= _4K;
 }
 
 // 只使用 ss0 和 esp0
@@ -135,5 +153,5 @@ void init_sched(void (*start)())
 void run()
 {
     lxs(4 * 8 + 1);
-    iret(s_cur_proc);
+    iret(&s_cur_proc->frame);
 }

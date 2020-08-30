@@ -12,11 +12,10 @@ void shell_process()
     msg.p1 = 11;
     msg.p2 = 4;
     r = system_call(-1, 0, (uint32_t)&msg);
-    printk("return value: %d\n", r);
-    msg.p0 = 2020;
-    msg.p1 = 8;
-    msg.p2 = 29;
-    r = system_call(-1, 0, (uint32_t)&msg);
-    printk("return value: %d\n", r);
+    if(r) {
+        printk("My child process id is %d\n", r);
+    } else {
+        printk("I'm a child process\n");
+    }
     while(1);
 }
